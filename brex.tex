@@ -1,0 +1,235 @@
+\documentclass[acmsmall,review,anonymous]{acmart}
+
+\def\techreport{1}
+
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+\usepackage{url}
+\usepackage{listings, lstautogobble}
+\usepackage{xspace}
+
+\usepackage{hyperref}
+\def\sectionautorefname{Section}
+\def\subsectionautorefname{Section}
+
+\if\techreport1
+    \newcommand{\bsqon}{\textsc{BsqON}\xspace}
+    \newcommand{\srclocation}{\url{https://github.com/BosqueLanguage/BSQON}}
+\else
+    \newcommand{\bsqon}{\textsc{DataON}\xspace}
+    \newcommand{\srclocation}{Omitted For Review}
+\fi
+
+
+\newcommand{\todo}[1]{{\color{red}#1}}
+
+\newcommand{\eg}{\hbox{\emph{e.g.}}\xspace}
+\newcommand{\ie}{\hbox{\emph{i.e.}}\xspace}
+\newcommand{\etc}{\hbox{\emph{etc.}}\xspace}
+\newcommand{\vs}{\hbox{\emph{vs.}}\xspace}
+\newcommand{\st}{\hbox{\emph{s.t.}}\xspace}
+\newcommand{\wrt}{\hbox{\emph{w.r.t.}}\xspace}
+
+\newcommand{\cf}[1]{\texttt{#1}}
+
+\newcommand\bnfalt{\;\;|\;\;}
+\newcommand\bnfas{\;\;:=\;\;}
+
+\newtheorem{theorem}{Theorem}
+
+\usepackage{color}
+\definecolor{purple}{RGB}{75, 0, 255}
+\definecolor{cgreen}{rgb}{0.25,0.5,0.35} % comments
+
+%define bosque language
+\lstdefinelanguage{bosque}{
+keywords={concept, entity, datatype, typedecl, provides, field, switch, match, abstract, method, if, then, elif, else, function, return, true, false, none, let, var, in, requires, ensures, invariant, validate, recursive, using, of, this, $, pred, fn, ref, examples, for, defer, test, const, override, $return},
+keywordstyle=\color{blue}\bfseries,
+identifierstyle=\color{black},
+alsoother={@},
+sensitive=true,
+comment=[l]{//},
+morecomment=[s]{/*}{*/},
+commentstyle=\color{cgreen}\bfseries,
+stringstyle=\color{red}\ttfamily
+}
+ 
+\lstset{
+language=bosque,
+extendedchars=true,
+basicstyle=\scriptsize\ttfamily,
+showstringspaces=false,
+showspaces=false,
+numbers=none,
+numberstyle=\footnotesize,
+numbersep=9pt,
+tabsize=2,
+breaklines=true,
+showtabs=false,
+captionpos=b,
+autogobble=true
+}
+
+\markright{XXXX}
+
+%% Rights management information.  This information is sent to you
+%% when you complete the rights form.  These commands have SAMPLE
+%% values in them; it is your responsibility as an author to replace
+%% the commands and values with those provided to you when you
+%% complete the rights form.
+\setcopyright{acmlicensed}
+\copyrightyear{2018}
+\acmYear{2018}
+\acmDOI{XXXXXXX.XXXXXXX}
+
+
+%%
+%% These commands are for a JOURNAL article.
+\acmJournal{JACM}
+\acmVolume{37}
+\acmNumber{4}
+\acmArticle{111}
+\acmMonth{8}
+
+%%
+%% Submission ID.
+%% Use this when submitting an article to a sponsored event. You'll
+%% receive a unique submission ID from the organizers
+%% of the event, and this ID should be used as the parameter to this command.
+%%\acmSubmissionID{123-A56-BU3}
+
+%%
+%% For managing citations, it is recommended to use bibliography
+%% files in BibTeX format.
+%%
+%% You can then either use BibTeX with the ACM-Reference-Format style,
+%% or BibLaTeX with the acmnumeric or acmauthoryear sytles, that include
+%% support for advanced citation of software artefact from the
+%% biblatex-software package, also separately available on CTAN.
+%%
+%% Look at the sample-*-biblatex.tex files for templates showcasing
+%% the biblatex styles.
+%%
+
+%%
+%% The majority of ACM publications use numbered citations and
+%% references.  The command \citestyle{authoryear} switches to the
+%% "author year" style.
+%%
+%% If you are preparing content for an event
+%% sponsored by ACM SIGGRAPH, you must use the "author year" style of
+%% citations and references.
+%% Uncommenting
+%% the next command will enable that style.
+%%\citestyle{acmauthoryear}
+
+\begin{document}
+
+%%
+%% The "title" command has an optional parameter,
+%% allowing the author to define a "short title" to be used in page headers.
+\title{Better Regexing with BREX -- A Modern Regex DSL}
+
+\author{Mark Marron}
+\email{marron@cs.uky.edu}
+%\orcid{1234-5678-9012}
+\affiliation{%
+  \institution{University of Kentucky}
+  \city{Lexington}
+  \state{Kentucky}
+  \country{USA}
+}
+
+%%
+%% The abstract is a short summary of the work to be presented in the
+%% article.
+\begin{abstract}
+Regular expressions (regexs) are a powerful and foundational programming features for string processing. Every mainstream language provides 
+builtin, and often specialized support for them. Emperical evidence suggests that regexs are widely used, appearing at least once in 
+one third of Python and JavaScript projects.  and are a critical tool for many
+
+Despite this importance, regexs are often difficult to write, read, and maintain. Developers often refer to them as ''read-only'' and 
+experience shows they are frequently the source of buggy application behavior. 
+Apochrphally -- you may think to yourself I have a problem, I'll use regexs, now I have two problems. 
+
+Despite these issues the DSL and core semantics of regexs in programming languages have remained largely unchanged since the 
+introduction of the xxx in the kkk and minorly extended into yyyy (PCRE) in the jjjs.
+\end{abstract}
+
+%%
+%% The code below is generated by the tool at http://dl.acm.org/ccs.cfm.
+%% Please copy and paste the code instead of the example below.
+%%
+\begin{CCSXML}
+<ccs2012>
+ <concept>
+  <concept_id>00000000.0000000.0000000</concept_id>
+  <concept_desc>Do Not Use This Code, Generate the Correct Terms for Your Paper</concept_desc>
+  <concept_significance>500</concept_significance>
+ </concept>
+</ccs2012>
+\end{CCSXML}
+
+\ccsdesc[500]{Do Not Use This Code~Generate the Correct Terms for Your Paper}
+
+\keywords{Keywords!!!}
+
+%\received{20 February 2007}
+%\received[revised]{12 March 2009}
+%\received[accepted]{5 June 2009}
+
+%%
+%% This command processes the author and affiliation and title
+%% information and builds the first part of the formatted document.
+\maketitle
+
+\cite{bosque}
+
+\section{Introduction}
+The usual
+
+\section{PCRE Review}
+
+\section{Better Regexing}
+
+\subsection{Regex DSL Syntax}
+
+\subsection{Regex DSL Semantics}
+
+\subsection{Regex Engine}
+
+\section{Better Globbing}
+
+\subsection{Glob DSL Syntax}
+
+\subsection{Glob DSL Semantics}
+
+\subsection{Glob Engine}
+
+\section{Case Studies}
+
+\subsection{Validation}
+
+\subsection{Parsing}
+
+\subsection{Globbing}
+
+\section{Related Work}
+
+\section{Onward!}
+
+\section*{Data-Availability Statement}
+This....
+
+
+%\begin{acks}
+%To Robert, for the bagels and explaining CMYK and color spaces.
+%\end{acks}
+
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{bibfile}
+
+
+\end{document}
+\endinput

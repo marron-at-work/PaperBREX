@@ -1,0 +1,108 @@
+%!TEX root = globs.tex
+
+This study employs a mixed-methods approach to comprehensively investigate glob pattern usage across programming ecosystems. Our methodology integrates quantitative analysis of 
+$62,713$ glob patterns extracted from $1,966$ open-source repositories with qualitative analysis of $2,160$ developer discussions from Stack Overflow, GitHub issues, and CVE 
+databases. This multi-method approach enables us to establish both technical implementation landscapes and practical developer experiences.
+
+\subsection{Language and Environment Selection}
+
+We selected six environments that utilize glob patterns which represent diverse use-cases and implementation paradigms. Our primary selection criteria was covering the diverse set 
+of scenarios where globbing has been integrated into the ecosystem as a DSL. This selection is based primarially in the authors $15$ years of experience working with large software 
+companies, primarially Microsoft, and experience there with projects on build systems, programming language implementation, and cloud development. Scondarially, we used the TIOBE index 
+to ensure we covered a diverse set of popular programming languages~\cite{tiobe}. The selected languages and their glob implementations are as follows: Bash (shell and file-system focused), 
+JavaScript/Node.js (URI and server routes + git usage)~\cite{typesciprtevol}, Go (both standard library with third-party extensions), PHP and Ruby (legacy web sites and contrasting 
+builtin vs library support), and Python (as a general purpose language). 
+
+This set of languages captures a broad spectrum of glob usage patterns due to differences in application domain 
+focuses and tasks that developers commonly perform with globs. In addition, the implementations of globs in these languages vary significantly, in some cases being built-in language 
+features, while in others being provided through third-party libraries, and in some cases having multiple competing implementations of globs.
+
+For each language, we analyzed the canonical (or most popular $3^{\text{rd}}$ party) glob implementation: Python's \texttt{glob} module and \texttt{pathlib.Path.glob()}, 
+Node.js's \texttt{glob} package (200+ million weekly downloads), Ruby's \texttt{Dir.glob()}, Go's \texttt{filepath.Glob()} with third-party alternatives, PHP's \texttt{glob()} 
+function, and Bash's native expansion. We conducted cross-platform testing on Linux, macOS, and Windows to evaluate semantic differences in case sensitivity, path separator handling, 
+and hidden file behavior.
+
+\subsection{Repository Selection and Pattern Extraction}
+
+We constructed a representative corpus through stratified sampling of $1,966$ active GitHub repositories (Python: $377$, JavaScript: $365$, Shell: $331$, Go: $314$, PHP: $300$, Ruby: $279$) 
+meeting these criteria \todo{there were some review comments here about inconsistencies and details -- please address}:
+
+\begin{itemize}
+\item Primary language composition >50\% to ensure idiomatic usage
+\item Minimum 150 GitHub stars indicating community adoption
+\item Active maintenance (commits within preceding 12 months)
+\item Exclusion of archived or deprecated repositories
+\end{itemize}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\columnwidth]{language_prevalence.pdf}
+    \caption{Distribution of glob pattern usage across programming languages}
+    \label{fig:language_prevalence}
+\end{figure}
+Our language selection strategy targeted six programming ecosystems representing diverse implementation approaches and application domains. As illustrated in~\Cref{fig:language_prevalence}, we observed significant variation in both repository penetration (the percentage of repositories containing glob patterns) and total pattern volume across languages. Python demonstrates the highest adoption with a number of $18,806$ of all extracted patterns, reflecting its prevalence in file-system-intensive domains like data science and scripting. Go follows with $17,798$, while Node.js, PHP, Ruby, and Shell show more modest but strategically important usage patterns. This distribution informed our stratified sampling approach, ensuring adequate representation of both high-volume ecosystems and specialized use cases while maintaining statistical power for cross-language comparison.
+The extraction employed a rigorous multi-phase process:
+
+\subsubsection{Initial Extraction and Refinement}
+We developed language-specific regular expressions targeting glob usage in both configuration files (\texttt{.gitignore}, build scripts) and source code. Initial extraction revealed three  systematic errors:
+
+\begin{enumerate}
+\item \textbf{False negatives (14\%)}: Missed patterns due to escaped metacharacters, template string interpolation, multi-line patterns
+\item \textbf{False positives (3\%)}: Inline comments, variable expansion, data structures mistaken as patterns
+\item \textbf{Ambiguities (1\%)}: Regular expressions resembling glob patterns, test assertion literals
+\end{enumerate}
+
+\subsubsection{Quality Control Implementation}
+We implemented a three-phase refinement process:
+
+\begin{enumerate}
+\item \textbf{Pattern cleaning}: A function stripped inline comments, filtered data structures, separated multiple patterns, and validated metacharacter presence
+\item \textbf{Feature disambiguation}: Negative lookbehind assertions distinguished brace expansion from variable expansion; simplified negation detection recognized any \texttt{!} usage
+\item \textbf{Validation}: Manual inspection (150 repositories) improved recall from 82\% to 94\% and achieved 99.9\% precision
+\end{enumerate}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\columnwidth]{source_comparison.pdf}
+    \caption{Source distribution of glob usage across open-source repositories}
+    \label{fig:source_comparison}
+\end{figure}
+
+\Cref{fig:language_prevalence} (b) shows the final corpus comprises $62,713$ validated patterns with distribution: Python $(29.99\%)$, JavaScript $(14.67\%)$, Go $(28.38\%)$, PHP $(6.08\%)$, Ruby $(12.79\%)$, Shell $(8.09\%)$. \Cref{fig:source_comparison} shows configuration files $(91.0\%)$ dominate source code use $(9.0\%)$.
+
+\subsection{Feature Detection and Classification}
+
+Each extracted pattern underwent automated analysis against a taxonomy of 13 features organized into three categories:
+
+\begin{enumerate}
+\item \textbf{Basic Matching}: Wildcard (\texttt{*}), recursive wildcard (\texttt{**}), single-character (\texttt{?}), character classes (\texttt{[]})
+\item \textbf{Advanced Patterns}: Brace expansion (\texttt{\{\}}), negation (\texttt{!}), extended glob operators, character ranges
+\item \textbf{Contextual Features}: Hidden files, absolute paths, directory qualifiers, escape characters, variable interpolation
+\end{enumerate}
+
+Feature detection employed context-sensitive regular expressions with disambiguation rules. For example, brace expansion detection used \verb|(?<!\$)\{([^}]+)\}| to exclude variable expansion. Validation on 500 randomly selected patterns achieved 100\% agreement with manual annotation.
+
+\subsection{Qualitative Data Collection and Analysis}
+
+We collected 2,094 developer discussions \cite{githubissueempirical} from three complementary sources (2018-2024):
+
+\begin{itemize}
+\item \textbf{Stack Overflow}: $361$ questions revealing help-seeking behavior and conceptual difficulties
+\item \textbf{GitHub Issues}: $1,355$ reports documenting production problems and feature requests  
+\item \textbf{CVE Database}: $444$ entries cataloging security vulnerabilities and exploits
+\end{itemize}
+
+Data collection used API scraping with keyword-based filtering (core: "glob", "wildcard"; feature-specific: "recursive glob", "brace expansion"; problem-specific: "glob error", "security") \cite{labelprediction}. Quality filters excluded low-score posts and duplicates.
+
+\subsubsection{Taxonomy Development}
+We developed a comprehensive issue taxonomy through iterative hybrid coding:
+
+\begin{enumerate}
+\item \textbf{Deductive initial categories}: Derived from software engineering literature: Usability, Reliability, Security, Performance, Feature Gaps, Compatibility
+\item \textbf{Automated categorization}: Keyword-based scoring assigned posts to primary categories
+\item \textbf{Inductive subcategory refinement}: Phrase frequency analysis identified recurring themes within each category
+\item \textbf{Validation}: Analysis of "Other" categories confirmed taxonomy completeness despite natural heterogeneity in developer problem descriptions
+\end{enumerate}
+
+\subsection{Documentation and Implementation Review}
+We conducted systematic reviews of official documentation for all studied glob implementations \cite{BashGlob, GoGlob, RubyGlob, PythonFnmatch, PythonGlob, PythonPathlib, PHPGlob, NodeGlob}. This analysis identified documentation gaps, platform-specific behavior omissions, and evolutionary changes across library versions. For instance, we tracked Python's Unicode handling improvements from version $2$ to $3$ \cite{python2-3}, Node.js's recursive matching enhancements, and Bash's extended glob support in version $4.0+$.

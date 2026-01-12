@@ -1,0 +1,253 @@
+%%%%%%%%%%%%%%%%%%%%%%% file globs.tex %%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% This is a general template file for the LaTeX package SVJour3
+% for Springer journals.          Springer Heidelberg 2010/09/16
+%
+% Copy it to a new file with a new name and use it as the basis
+% for your article. Delete % signs as needed.
+%
+% This template includes a few options for different layouts and
+% content for various journals. Please consult a previous issue of
+% your journal as needed.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\RequirePackage{fix-cm}
+%
+%\documentclass{svjour3}                     % onecolumn (standard format)
+%\documentclass[smallcondensed]{svjour3}     % onecolumn (ditto)
+\documentclass[smallextended]{svjour3}       % onecolumn (second format)
+%\documentclass[twocolumn]{svjour3}          % twocolumn
+%
+\smartqed  % flush right qed marks, e.g. at end of proof
+%
+
+\makeatletter
+%\def\cl@chapter{\cl@chapter \@elt {theorem}}%bug in class
+\def\cl@chapter{\@elt {theorem}}
+\makeatother
+
+\usepackage{amsmath,amsfonts}
+\usepackage{array}
+\usepackage[caption=false,font=normalsize,labelfont=sf,textfont=sf]{subfig}
+\usepackage{url}
+\usepackage{graphicx}
+\usepackage{mathptmx}      
+
+\usepackage{cleveref}
+
+\usepackage[utf8]{inputenc}
+\usepackage{listingsutf8, pythonhighlight}
+\lstset{ 
+literate= {á}{{\'a}}1 
+    {é}{{\'e}}1 
+    {í}{{\'i}}1 
+    {ó}{{\'o}}1 
+    {ú}{{\'u}}1
+} 
+
+\usepackage{listings, lstautogobble}
+\usepackage{xspace}
+\usepackage{booktabs}
+\usepackage{xcolor}
+
+\lstdefinelanguage{JavaScript}{
+    keywords={typeof, new, true, false, catch, function, return, null, catch, switch, var, if, in, while, do, else, case, break},
+    keywordstyle=\color{blue}\bfseries,
+    ndkeywords={class, export, boolean, throw, implements, import, this},
+    ndkeywordstyle=\color{darkgray}\bfseries,
+    identifierstyle=\color{black},
+    sensitive=false,
+    comment=[l]{//},
+    morecomment=[s]{/*}{*/},
+    commentstyle=\color{gray}\ttfamily,
+    stringstyle=\color{red}\ttfamily,
+    morestring=[b]',
+    morestring=[b]"
+}
+
+\lstdefinelanguage{HCL}{
+    keywords={path, capabilities, read, write},
+    keywordstyle=\color{blue}\bfseries,
+    sensitive=false,
+    comment=[l]{\#},
+    commentstyle=\color{gray}\ttfamily,
+    stringstyle=\color{red}\ttfamily
+}
+
+\lstdefinelanguage{Go}{
+    keywords={func, const, if, else, return, nil, error, string},
+    keywordstyle=\color{blue}\bfseries,
+    sensitive=false,
+    comment=[l]{//},
+    morecomment=[s]{/*}{*/},
+    commentstyle=\color{gray}\ttfamily,
+    stringstyle=\color{red}\ttfamily
+}
+
+\lstset{
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    backgroundcolor=\color{gray!10},
+    captionpos=b
+}
+\lstdefinelanguage{ebnf}{
+    morekeywords={::=},
+    sensitive=false,
+    morecomment=[l]{//},
+    morecomment=[s]{/*}{*/},
+    morestring=[b]",
+}
+\lstset{
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue},
+    commentstyle=\color{gray},
+    stringstyle=\color{red},
+    breaklines=true,
+    frame=single,
+    backgroundcolor=\color{gray!10},
+    captionpos=b
+}
+
+\usepackage{enumitem}
+\setlist[itemize]{noitemsep, topsep=3pt}
+\newlist{researchquestions}{enumerate}{1}
+\setlist[researchquestions]{label*=\textbf{RQ\arabic*}}
+
+
+\newcommand{\todo}[1]{{\color{red}#1}}
+\newcommand{\evaluate}[1]{{\color{blue}#1}}
+
+\newcommand{\tab}{\hspace*{0.3cm}}
+
+\newcommand{\eg}{\hbox{\emph{e.g.}}\xspace}
+\newcommand{\ie}{\hbox{\emph{i.e.}}\xspace}
+\newcommand{\etc}{\hbox{\emph{etc.}}\xspace}
+\newcommand{\vs}{\hbox{\emph{vs.}}\xspace}
+\newcommand{\st}{\hbox{\emph{s.t.}}\xspace}
+\newcommand{\wrt}{\hbox{\emph{w.r.t.}}\xspace}
+
+\newcommand{\gdos}{\hbox{G-DoS}\xspace}
+
+\newcommand{\cf}[1]{\texttt{#1}}
+
+\newcommand\bnfalt{\;\;|\;\;}
+\newcommand\bnfas{\;\;:=\;\;}
+
+% Insert the name of "your journal" with
+\journalname{Empirical Software Engineering}
+%
+\begin{document}
+
+\title{An Empirical Analysis of the Glob Ecosystem}
+
+\author{Phyllis Lim         \and
+        Connor Adkins       \and
+        Mark Marron
+}
+
+%\authorrunning{Short form of author list} % if too long for running head
+
+\institute{Phyllis Lim \at
+              \email{pli231@uky.edu}
+            \and
+            Connor Adkins \at
+              \email{chandon.adkins@uky.edu}
+            \and
+            Mark Marron \at
+              \email{mark.marron@uky.edu}
+}
+
+\date{Received: date / Accepted: date}
+% The correct dates will be entered by the editor
+
+\maketitle
+
+\begin{abstract}
+Globs patterns, a domain-specific language for structured string matching, are a foundational yet understudied component of modern software development embedded in everything from build scripts and configuration files to web server routes. However, this widespread use, with $79.1\%$ of sampled GitHub project use globs in some form, rests on a fragile foundation. Despite their ubiquity across operating systems, programming languages, and tools, a lack of standardization has led to a fragmented ecosystem rife with inconsistent behaviors, security vulnerabilities, and usability pitfalls. 
+
+This paper presents the first empirical study of the glob ecosystem to quantify these challenges and chart a path toward robust solutions. Through an analysis of $1,966$ open source projects, $1,355$ Github issues, $444$ CVE reports, and $361$ StackOverflow posts, we systematically map the feature support and real-world usage of globs across six popular programming languages. Our findings reveal a stark divide between language designs and developer adoption. In addition, we document inconsistencies that hinder portability, reliability, and create security flaws. Our analysis reveals that security vulnerabilities are not corner cases, but a dominant concern, comprising almost a quarter of all developer discussions. We propose a path forward through standardization and introduce a formal grammar for \textit{GlobSpec}, a unified specification designed to resolve semantic ambiguities and bridge the expressiveness gap between current implementations and developer requirements.
+\keywords{First keyword \and Second keyword \and More}
+% \PACS{PACS code1 \and PACS code2 \and more}
+\subclass{MSC code1 \and MSC code2 \and more}
+\end{abstract}
+
+\section{Introduction}
+\label{intro}
+Your text comes here. Separate text sections with
+\section{Section title}
+\label{sec:1}
+Text with citations \cite{tiobe}.
+\subsection{Subsection title}
+\label{sec:2}
+as required. Don't forget to give each section
+and subsection a unique label.
+\paragraph{Paragraph headings} Use paragraph headings as needed.
+\begin{equation}
+a^2+b^2=c^2
+\end{equation}
+
+% For one-column wide figures use
+\begin{figure}
+% Use the relevant command to insert your figure file.
+% For example, with the graphicx package use
+  \includegraphics{example.eps}
+% figure caption is below the figure
+\caption{Please write your figure caption here}
+\label{fig:1}       % Give a unique label
+\end{figure}
+%
+% For two-column wide figures use
+\begin{figure*}
+% Use the relevant command to insert your figure file.
+% For example, with the graphicx package use
+  \includegraphics[width=0.75\textwidth]{example.eps}
+% figure caption is below the figure
+\caption{Please write your figure caption here}
+\label{fig:2}       % Give a unique label
+\end{figure*}
+%
+% For tables use
+\begin{table}
+% table caption is above the table
+\caption{Please write your table caption here}
+\label{tab:1}       % Give a unique label
+% For LaTeX tables use
+\begin{tabular}{lll}
+\hline\noalign{\smallskip}
+first & second & third  \\
+\noalign{\smallskip}\hline\noalign{\smallskip}
+number & number & number \\
+number & number & number \\
+\noalign{\smallskip}\hline
+\end{tabular}
+\end{table}
+
+
+%\begin{acknowledgements}
+%If you'd like to thank anyone, place your comments here
+%and remove the percent signs.
+%\end{acknowledgements}
+
+
+% Authors must disclose all relationships or interests that 
+% could have direct or potential influence or impart bias on 
+% the work: 
+%
+% \section*{Conflict of interest}
+%
+% The authors declare that they have no conflict of interest.
+
+
+% BibTeX users please use one of
+\bibliographystyle{spbasic}      % basic style, author-year citations
+%\bibliographystyle{spmpsci}      % mathematics and physical sciences
+%\bibliographystyle{spphys}       % APS-like style for physics
+%\bibliography{}   % name your BibTeX data base
+
+\bibliography{bibliography}
+
+\end{document}
+% end of file template.tex
+

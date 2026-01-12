@@ -1,0 +1,30 @@
+%!TEX root = globs.tex
+
+Globbing\footnote{For the POSIX specification, see the GNU C Library manual on ``Pattern Matching'' (\url{https://ftp.gnu.org/old-gnu/Manuals/glibc-2.2.3/html_node/libc_137.html}). 
+For detailed specifications, see the Linux \texttt{glob(7)} manual page (\url{https://man7.org/linux/man-pages/man7/glob.7.html})} refers to the process of expanding a pattern to 
+match a set of pathnames. It originated in the early Unix shell with a simple, finite set of wildcards: $*$, $?$, and \texttt[abc]. This places globs squarely within the class of 
+regular languages. However, globs represent a domain-specific language (DSL) specialized for hierarchical name structures in contrast to the general-purpose text matching of regex 
+languages. Globbing simplicity is its strength, leading to widespread adoption far beyond the shell.
+
+What began as simple command-line wildcard expansion has evolved into a ubiquitous mini-language with multiple dialects embedded across diverse computational contexts:
+\begin{itemize}
+\item \textbf{Source Control}: Git fundamentally relies on glob patterns in \texttt{.gitignore} files
+\item \textbf{Build Systems}: Tools like Make employ globs for file specification
+\item \textbf{Resource Identification}: Patterns appear in URLs and URIs for hierarchical matching
+\item \textbf{Web Development}: Frameworks like Express.js use glob-like syntax for route definitions
+\end{itemize}
+
+However, this proliferation occurred without a unifying standard, resulting in a landscape of incompatible dialects. Implementations that vary in their support for essential 
+features like recursive wildcards ($**$), negation ($!$), brace expansion ($\{\}$), and exhibit divergent behavior across platforms regarding case sensitivity, path separators, 
+and hidden file handling. 
+
+Globbing plays a crucial role in file system navigation and automation, enabling efficient pattern-based file retrieval. However, despite its widespread use, there is a notable 
+lack of standardization across different programming languages, leading to inconsistencies in behavior, usability challenges, and security concerns~\cite{symbolic-execution-based-testing}. 
+The variations in globbing behavior become particularly evident in cross-platform scenarios. Unix-like systems treat filenames starting with a dot (\texttt{.hidden}) as hidden 
+files, which may be included or excluded in globbing results based on the implementation. In contrast, Windows does not follow the same convention, leading to differences when 
+scripts are ported between platforms. Additionally, differences in case sensitivity (Unix is case-sensitive while Windows is not), and unicode handling further complicate cross-platform 
+compatibility.
+
+This proliferation without standardization has created an ecosystem where the same pattern may behave differently across contexts, leading to the reliability and security issues 
+that this study empirically investigates. Given the widespread use of globbing in file handling and automation, it is crucial to understand these differences to avoid common 
+pitfalls and ensure reliable, portable behaviors. 

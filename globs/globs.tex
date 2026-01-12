@@ -27,6 +27,8 @@
 \def\cl@chapter{\@elt {theorem}}
 \makeatother
 
+\usepackage{natbib}
+
 \usepackage{amsmath,amsfonts}
 \usepackage{array}
 \usepackage[caption=false,font=normalsize,labelfont=sf,textfont=sf]{subfig}
@@ -165,17 +167,28 @@ literate= {á}{{\'a}}1
 \maketitle
 
 \begin{abstract}
-Globs patterns, a domain-specific language for structured string matching, are a foundational yet understudied component of modern software development embedded in everything from build scripts and configuration files to web server routes. However, this widespread use, with $79.1\%$ of sampled GitHub project use globs in some form, rests on a fragile foundation. Despite their ubiquity across operating systems, programming languages, and tools, a lack of standardization has led to a fragmented ecosystem rife with inconsistent behaviors, security vulnerabilities, and usability pitfalls. 
+Glob patterns, a domain-specific language for structured string matching, are a foundational yet understudied component of modern software development embedded in everything 
+from build scripts and configuration files to web server routes. However, this widespread use, rests on a fragile foundation. Despite their ubiquity across operating system tools 
+and programming languages, a lack of standardization has led to a fragmented ecosystem rife with inconsistent behaviors, security vulnerabilities, and usability pitfalls. 
+This paper presents the first empirical study of the glob ecosystem to quantify these challenges and chart a path toward robust solutions. 
 
-This paper presents the first empirical study of the glob ecosystem to quantify these challenges and chart a path toward robust solutions. Through an analysis of $1,966$ open source projects, $1,355$ Github issues, $444$ CVE reports, and $361$ StackOverflow posts, we systematically map the feature support and real-world usage of globs across six popular programming languages. Our findings reveal a stark divide between language designs and developer adoption. In addition, we document inconsistencies that hinder portability, reliability, and create security flaws. Our analysis reveals that security vulnerabilities are not corner cases, but a dominant concern, comprising almost a quarter of all developer discussions. We propose a path forward through standardization and introduce a formal grammar for \textit{GlobSpec}, a unified specification designed to resolve semantic ambiguities and bridge the expressiveness gap between current implementations and developer requirements.
-\keywords{First keyword \and Second keyword \and More}
+Through an analysis of $1,966$ open source projects, $1,355$ Github issues, $444$ CVE reports, and $361$ StackOverflow posts, we systematically map the feature support and 
+real-world usage of globs across six common ecosystems that utilize globs. 
+Our findings reveal a stark divide between various globbing implementations and developer adoption. In addition, we document inconsistencies that hinder portability, reliability, 
+and create security flaws. Our analysis reveals that security vulnerabilities are not corner cases, but a dominant concern, comprising almost a quarter of all developer discussions. 
+We propose a path forward through standardization and introduce a formal grammar for \textit{GlobSpec}, a unified specification designed to resolve semantic ambiguities and 
+bridge the expressiveness gap between current implementations and developer requirements.
+\keywords{Globs, Pattern matching, Domain Specific Language, Software engineering}
 % \PACS{PACS code1 \and PACS code2 \and more}
 \subclass{MSC code1 \and MSC code2 \and more}
 \end{abstract}
 
 \section{Introduction}
 \label{intro}
-Your text comes here. Separate text sections with
+\input{intro.tex}
+
+
+
 \section{Section title}
 \label{sec:1}
 Text with citations \cite{tiobe}.
@@ -241,11 +254,11 @@ number & number & number \\
 
 
 % BibTeX users please use one of
-\bibliographystyle{spbasic}      % basic style, author-year citations
+%\bibliographystyle{spbasic}      % basic style, author-year citations
 %\bibliographystyle{spmpsci}      % mathematics and physical sciences
 %\bibliographystyle{spphys}       % APS-like style for physics
-%\bibliography{}   % name your BibTeX data base
 
+\bibliographystyle{spbasic}
 \bibliography{bibliography}
 
 \end{document}

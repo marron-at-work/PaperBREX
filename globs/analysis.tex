@@ -1,0 +1,384 @@
+%!TEX root = globs.tex
+Based on the data collection and methodology described in \Cref{sec:methodology}, we present our analysis addressing each research question in turn.
+
+\subsection*{\bf RQ1: Are features uniform across globbing implementations and, if not, how do these features differ?}
+
+\Cref{tab:glob_features_support} and \Cref{fig:feature_usage} reveal significant disparities between glob feature availability and actual usage patterns across programming languages.
+\begin{table}[t]
+    \centering
+    \small
+    \caption{Support for Glob features across languages based on official language or $3^{\text{rd}}$ party library documentation.}
+    \label{tab:glob_features_support}
+    \begin{tabular}{lcccccc}
+        \toprule
+        \textbf{Feature} & \textbf{Bash} & \textbf{Python} & \textbf{Node.js} & \textbf{Ruby} & \textbf{PHP} & \textbf{Go} \\
+        \midrule
+        Wildcard (*)         & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ \\
+        Recursive (**)       & $\bullet$ & $\bullet$\textsuperscript{1} & $\bullet$ & $\bullet$ & $\circ$ & $\circ$ \\
+        Single-char (?)      & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ \\
+        Brace expansion (\{\}) & $\circ$ & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$\textsuperscript{2} \\
+        Character class ([]) & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ \\
+        Negation (!)         & $\circ$ & $\circ$ & $\bullet$ & $\circ$ & $\bullet$ & $\circ$ \\
+        Hidden files (.*)    & $\bullet$ & $\bullet$\textsuperscript{3} & $\bullet$\textsuperscript{4} & $\bullet$\textsuperscript{5} & $\bullet$ & $\bullet$ \\
+        \bottomrule
+    \end{tabular}
+    
+    \vspace{2mm}
+    \small
+    \raggedright
+    \textbf{Legend}: $\bullet$ = Native support; $\circ$ = No native support. \\
+    \textsuperscript{1}\texttt{recursive=True} required,
+    \textsuperscript{2}\texttt{GLOB\_BRACE} flag required,
+    \textsuperscript{3}\texttt{include\_hidden=True} required,
+    \textsuperscript{4}\texttt{dot:true} option required,
+    \textsuperscript{5}\texttt{File::FNM\_DOTMATCH} required
+\end{table}
+
+The data in \Cref{tab:glob_features_support} shows that four features have universal support: wildcard (\texttt{*}), single-character (\texttt{?}), character classes (\texttt{[]}), and 
+hidden file (\texttt{.*}). These form a minimal portable core derived from historical Unix implementations. 
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\columnwidth]{feature_usage.pdf}
+    \caption{Empirical usage patterns of glob features across $62,713$ patterns extracted from open-source repositories}
+    \label{fig:feature_usage}
+\end{figure}
+
+An analysis of the $62,713$ glob patterns reveals stark usage disparities. \Cref{fig:feature_usage} demonstrates clear hierarchy of feature adoption. The wildcard operator (\texttt{*}) 
+dominates with $90.98\%$ prevalence ($57,061$ patterns), confirming its role as the fundamental glob construct. Hidden file patterns appear in $8.72\%$ of cases ($5,470$ patterns), 
+reflecting the importance of configuration file management. Character classes ($5.48\%$, $3,437$ patterns) and recursive globbing ($5.21\%$, $3,265$ patterns) show moderate adoption 
+for specific matching needs. Most strikingly, advanced features exhibit minimal usage: single-character wildcards ($0.5\%$, $322$ patterns), brace expansion ($0.29\%$, $182$ patterns), 
+and negation ($0.02\%$, $11$ patterns). 
+
+This distribution reveals a significant gap between available language features and actual developer adoption, suggesting that current implementations either fail to meet practical 
+needs or present usability barriers for advanced functionality. Beyond the core features we immediately encounter problematic fragmentation in behaviors and feature availability including:
+
+\begin{itemize}
+\item \textbf{Recursive globbing (\texttt{**})}: Python requires explicit flags, Go lacks native support, Bash needs optional configuration.
+\item \textbf{Brace expansion}: is implemented at different abstraction layers (shell vs. library) and result in behavioral variations.
+\item \textbf{Negation}: is implemented via multiple incompatible mechanisms (gitignore prefix, character class, extended glob).
+\item \textbf{Hidden files}: have inconsistent defaults, creating security risks across APIs, even within the same language.
+\end{itemize}
+
+\subsection*{\bf RQ2: Do differences in globbing behavior and dialect impact usability/reliability and to what extent? }
+
+The analysis of developer discussions (\todo{2,094 this number is different that reported previously} in total) reveals how glob implementation inconsistencies translate into 
+reliability and usability problems, with platform-specific semantic drift emerging as a critical concern. We enumerate the general themes identified in our taxonomy below 
+(\Cref{fig:issue_categories}) and provide more detailed analysis and case studies for the most significant issues.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\columnwidth]{issue_categories.pdf}
+    \caption{Distribution of \todo{2,094} glob-related issues, derived from developer discussions, across six primary categories -- security, features, reliability, usability, 
+    compatibility, performance, and other. \todo{Should sort this from highest to lowest and other as bottom category (maybe in shaded grey) dont color security.}}
+    \label{fig:issue_categories}
+\end{figure}
+
+Glob issues span a range of severity levels, with critical problems comprising $22.3\%$ of reports. The taxonomy distribution (\Cref{fig:issue_categories}) shows reliability: 
+$392$ posts ($18.1\%$), usability: $246$ posts ($11.4\%$), feature gaps: $508$ posts ($23.5\%$), security: $530$ posts ($24.5\%$), compatibility: $91$ posts ($4.2\%$), 
+performance: $81$ posts ($3.8\%$).
+
+Language-specific analysis reveals disproportionate friction in certain ecosystems. Go appears in $523$ issue mentions ($24.2\%$ of language references) despite representing 
+only $28.38\%$ of our pattern corpus, indicating significant challenges with its standard library's limited glob support and third-party fragmentation.
+
+Runtime errors \todo{what do we mean by runtime errors -- not a category in the figure?} dominate reliability issues ($183$ posts, $46.7\%$). The high proportion of runtime errors suggests that glob implementations often encounter conditions 
+that were not expected by developers, leading to application crashes or unhandled exceptions during file system operations. This pattern indicates potential gaps in error 
+handling robustness across different glob implementations.
+
+The related issue of cross-tool inconsistency ($41$ posts, $10.5\%$) demonstrates how patterns working in one tool fail in another. These cases reveal that developers expect 
+consistent glob behavior across different tools and libraries, but encounter unexpected differences in pattern matching semantics. The presence of these inconsistencies 
+suggests the lack of standardized behavior for glob implementations causes substantial friction, forcing developers to learn and account for tool-specific variations in their workflows, 
+and inhibits the use of globbing.
+
+Integration problems ($25$ posts, $6.4\%$) occur when glob patterns work in isolation but fail in system contexts. These issues highlight how glob operations are sensitive to 
+their runtime environment, including factors such as current working directory, user permissions, and filesystem state. The recurrence of integration problems suggests that glob 
+patterns may have implicit dependencies on execution context that are not always apparent during development or testing in isolated environments.
+
+Documentation gaps represent a significant usability barrier, comprising $142$ posts ($58.0\%$ of usability issues). Developers consistently report insufficient documentation 
+covering edge cases, platform-specific behaviors, and advanced feature usage. 
+
+Syntax confusion and error messages, appearing in $13$ posts ($5.3\%$) and $10$ posts ($4.1\%$) respectively, involve mismatches between developer expectations from shell 
+experience and programmatic glob behavior along with generic error messages making issues difficult to investigate. 
+
+\subsubsection{Hidden File Handling Complications}
+Despite $5,470$ patterns ($8.72\%$) explicitly referencing hidden files, inconsistent defaults create persistent hazards and information disclosure risks across programming ecosystems. 
+The problem is particularly acute when recursive globbing interacts with hidden file policies, as demonstrated by Node.js's inconsistent behavior:
+
+\begin{lstlisting}[language=JavaScript, basicstyle=\ttfamily\footnotesize]
+// These patterns match hidden files:
+'subdir/{.,}*.js'    // Explicit directory
+'*/{.,}*.js'         // Single wildcard
+
+// These patterns unexpectedly exclude hidden files:
+'scan/**/{.,}*.js'   // Double wildcard excludes hidden files
+'**/{.,}*.js'        // Also excludes hidden files
+\end{lstlisting}
+
+Inconsistency across implementations results in the same pattern producing different results across tools. While \texttt{node-glob} and bash correctly match hidden files with recursive 
+wildcards, Node.js's built-in \texttt{fs/promises} glob implementation unexpectedly excludes them. This creates silent failures where deployment scripts work during development with 
+one library but fail (or silently produce different results) when passed to another \todo{do we have an example (or include in the example above?)}.
+
+Security and reliability are major concerns with the inconsistent behavior around hidden files which often contain important configs information (which should be included) or sensitive 
+forms of data (which must be excluded). Build processes may miss critical configuration files, causing runtime failures. Conversely, when hidden files are unexpectedly included, deployment 
+scripts may expose sensitive files like \texttt{.env} or \texttt{.credentials} containing API keys and database passwords\todo{do we have a CVE or incident report of this?}.
+
+The Python ecosystem is another example with divergent behavior between \texttt{glob.glob()} (excludes hidden files by default) and \texttt{pathlib.Path.glob()} (includes them). 
+These inconsistencies cause production incidents where CI environment behavior diverges from development setups, creating unreliable deployments and potential information 
+disclosure vulnerabilities.
+
+\subsubsection{Platform-Specific Semantic Drift}
+Our data analysis identified $91$ posts ($4.2\%$ of total corpus) explicitly describing cross-platform problems, with platform differences dominating ($45$ posts, $49.5\%$ of compatibility 
+issues). 
+
+Case sensitivity mismatches create silent failures when moving between Unix-like systems and Windows. A Stack Overflow question illustrates: "I have files named \texttt{1\_1.txt}, 
+\texttt{1\_2.TXT}, \texttt{2\_1.txt}. On Windows, \texttt{glob.glob('*.txt')} matches all three files. On Linux, it only matches lowercase extensions. My code broke because it depends 
+on processing all files regardless of capitalization."
+
+%\textbf{Path separator ambiguity} ($17$ posts, $18.7\%$ of compatibility issues) causes problems on Windows where backslash serves as native separator while Unix uses forward slash.
+
+Unicode normalization differences are a cause of failures that are particularly difficult to diagnose. File systems can differ in normalization schemes (NFC vs. NFD), causing the same 
+visual character to be stored using different byte sequences.
+
+\begin{lstlisting}[language=Python, basicstyle=\ttfamily\footnotesize]
+# Matches NFD-encoded 'café' but may miss NFC 'café'
+files_macos = glob.glob('*café*')    
+# Behavior varies by filesystem: may match NFC, NFD, or both
+files_linux = glob.glob('*café*')    
+
+# Underlying encoding differences:
+# macOS (HFS+/APFS): NFD - 'cafe' + combining acute
+# Windows/Linux: NFC - precomposed 'é' character
+\end{lstlisting}
+
+As noted in developer forums: "macOS stores file names in Unicode NFD, while other OSes like Windows use NFC. Linux filesystems can use both encodings." This creates subtle cross-platform 
+bugs with deployment scripts working during testing on macOS but breaking in production on Linux servers. The problem may also manifest as missing files or duplicate files when sharing 
+across systems, requiring manual normalization workarounds that current glob implementations lack.
+
+Locale-dependent character classes amplify these issues and create additional platform variation. The pattern \texttt{[a-z]} behavior depends on system locale settings: under UTF-8 locales, 
+ranges may match letters with diacritics, while C locale (ASCII-only) excludes them. One Bash-focused post describes production incidents where \texttt{rm [a-z]*} deleted files like 
+\texttt{élite.txt} that weren't removed during development.
+
+Finally, version incompatibility ($9$ posts, $9.9\%$ of compatibility issues), describes breaking changes between library versions. A representative case documents Python $3.8$ to $3.10$ 
+migration where \texttt{glob.glob()} changed default symlink following behavior for security reasons, causing production behavior to differ from development.
+
+The platform-specific semantic drift particularly affects cross-platform development workflows \cite{lingua-franca}, where subtle behavioral differences create bugs that are difficult 
+to reproduce and diagnose. These issues often manifest only in production environments, making them expensive to discover and resolve.
+
+\subsection*{\bf RQ3: What are the common classes of correctness and security issues encountered with globs?}
+
+Our analysis identified $530$ security-related posts from the discourse corpus ($24.5\%$ of total). These posts reveal that, in addition to theoretical concerns, glob security problems 
+manifest as actual exploited vulnerabilities as well. \Cref{fig:issue_categories} shows that security issues represent the largest category of developer concerns, underscoring the 
+critical importance of addressing glob-related vulnerabilities in production systems.
+
+Our study reveals a nuanced threat landscape dominated by unauthorized file access, with detailed breakdown shown in \Cref{fig:security_taxonomy}. The security taxonomy, \todo{derived from 
+where?}, demonstrates that glob vulnerabilities extend beyond simple path traversal to encompass sophisticated attack vectors.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\columnwidth]{security_taxonomy.pdf}
+    \caption{Detailed breakdown of 528 security issues based on analyzed developer discussions, highlighting prevalent vulnerability classes and showing the contribution of glob based 
+    denial-of-service attacks, which represent a emerging threat vector globs are increasingly used in validation checks for URI resource access and API path routing.}
+    \label{fig:security_taxonomy}
+\end{figure}
+
+The distinction between Arbitrary File Access ($37.8\%$) and Path Traversal ($16.4\%$) is crucial: while Path Traversal specifically involves directory escape sequences, Arbitrary 
+File Access encompasses broader exploitation patterns including symlink attacks, predictable filename attacks, and glob pattern injection that construct valid paths to sensitive files.
+
+We identify \textbf{\gdos} as a distinct denial-of-service vector characterized by resource exhaustion through pathological pattern matching (similar to the rise of ReDoS~\cite{impact-of-ReDoS,ReDoS-web} 
+attacks). G-DoS vulnerabilities~\cite{craft-ReDoS,ReDoS-web,static-detection-dos} can be used to both attack the glob matching engine itself~\cite{rethink-regex} but 
+can also be performed by overwhelming the underlying file system (or resource) through excessive I/O operations.
+
+Vulnerability CVE-2022-30630 existed in Go's original \texttt{Glob} function, which invoked recursive logic without depth bounds:
+
+\begin{lstlisting}[language=Go, basicstyle=\ttfamily\footnotesize
+]
+func Glob(pattern string) (matches []string, err error) {
+    if _, err := Match(pattern, ""); err != nil {
+        return nil, err
+    }
+    if !hasMeta(pattern) {
+        if _, err = os.Lstat(pattern); err != nil {
+            return nil, nil
+        }
+        return []string{pattern}, nil
+    }
+    // ... recursive logic without depth limits
+}
+\end{lstlisting}
+
+The fix introduced a hard-coded depth limit:
+
+\begin{lstlisting}[language=Go, basicstyle=\ttfamily\footnotesize
+]
+func Glob(pattern string) (matches []string, err error) {
+    return globWithLimit(pattern, 0)
+}
+
+func globWithLimit(pattern string, depth int) (matches []string, err error) {
+    const pathSeparatorsLimit = 10000
+    if depth == pathSeparatorsLimit {
+        return nil, ErrBadPattern
+    }
+    // ... original logic
+}
+\end{lstlisting}
+
+While preventing crashes, this solution is brittle and the core issue remains. The arbitrary 10,000 separator limit creates new failures: legitimate operations on deeply 
+nested directories (e.g., \texttt{node\_modules}) are abruptly terminated. This transforms potential DoS attacks into guaranteed failures for legitimate users exceeding the 
+threshold \cite{Golangvuln}. An alternative attach, \cite{heapoutofbound} highlights heap out-of-bounds issues, attacking the engine itself, triggered through recursive globbing. 
+The Apple platform vulnerabilities~\cite{apple1,apple2,apple3} demonstrate how crafted strings can cause excessive resource consumption in \texttt{libc} glob implementations.
+
+Information disclosure vulnerabilities ($4$ posts, $1.1\%$) have a disproportionately severe impact despite low frequency~\cite{dotfilesecurity}, particularly through 
+inadvertent exposure of hidden configuration files. The most common scenario involves patterns like \texttt{public/**/*} intended to match public assets but inadvertently 
+including hidden configuration files which may contain keys or other secrets. The HashiCorp Vault vulnerability (CVE-2021-42135) exemplifies how semantic ambiguity in glob 
+patterns can directly compromise security boundaries.
+
+\begin{lstlisting}[language=HCL, basicstyle=\ttfamily\footnotesize]
+path "gcp/roleset/*" {
+  capabilities = ["read"]
+}
+# In Vault 1.8.0+, this policy unintentionally granted permission to generate Google Cloud service account credentials
+\end{lstlisting}
+
+\textbf{Vulnerability Mechanism:} Prior to Vault 1.8.0, the pattern \texttt{gcp/roleset/*} correctly provided read-only access to roleset listings. The introduction of roleset-specific credential endpoints at paths like \texttt{gcp/roleset/\{name\}/credential} caused the existing glob pattern to match these new, security-critical paths. The \texttt{read} capability, which was safe for enumeration operations, became dangerous when applied to credential generation endpoints.
+
+\textbf{Security Impact:} This semantic misinterpretation violated the principle of least privilege with severe consequences. Attackers could exploit this to generate Google Cloud service account credentials, enabling unauthorized access to sensitive cloud resources including storage systems, databases, and production infrastructure. The vulnerability transformed a benign enumeration permission into a privilege escalation vector that could lead to full cloud environment compromise.
+
+This case demonstrates that glob patterns in security contexts create fragile abstraction boundaries. Pattern semantics that appear stable can be fundamentally altered by underlying system evolution, silently introducing critical security vulnerabilities that bypass intended access controls.
+
+\subsubsection{Unexpected Matching and Pattern Ambiguity}
+
+Unexpected matching represents a significant correctness concern, particularly with hidden file patterns. The \texttt{.*} pattern, while intended to match all hidden files in a directory, also matches the current directory (\texttt{.}) and parent directory (\texttt{..}), leading to incorrect results and potential errors in file processing.
+
+The lack of consistent hidden file handling across programming languages exacerbates these issues, forcing developers to implement additional filtering logic. Patterns that work correctly in one environment may produce unexpected matches in another due to different default behaviors for special directories and hidden files.
+
+Case sensitivity inconsistencies introduce additional unexpected matching risks. As demonstrated by \cite{caseinsensitive}, case-insensitive pattern matching can result in unauthorized file access when moving between platforms with different filesystem semantics.
+
+\subsubsection{Path Traversal Vulnerabilities}
+
+Path traversal remains a critical security concern, with $58$ posts ($16.4\%$ of security issues) specifically involving directory escape sequences. According to the MITRE CWE Top 25 Most Dangerous Software Weaknesses of 2024 \cite{mitre2024top25}, path traversal (CWE-22) ranked 5th, underscoring its prevalence and impact.
+
+Poorly constructed glob patterns such as \texttt{../../*} allow attackers to traverse directory hierarchies and access sensitive system files. This issue is particularly concerning in web applications, command-line utilities, and API endpoints.
+
+The vulnerability \cite{globinconsistency} exposes how inconsistencies in glob handling can be exploited to bypass intended file restrictions. Similarly, \cite{insecureparsing} and \cite{pathescape} demonstrate how improper escaping and parsing of special characters lead to unintended behavior and security vulnerabilities.
+
+\subsection*{RQ4: How comprehensive are globbing languages in addressing the tasks encountered in practice?}
+
+Our analysis reveals significant gaps between developer needs and current glob implementations across documentation, feature completeness, usability, and performance. By synthesizing findings from all research questions, we identify strategic improvement priorities grounded in empirical evidence from $2,160$ developer discussions and $62,713$ pattern analyses.
+
+\subsubsection{Documentation Inadequacy}
+
+Documentation gaps represent the most significant usability barrier, comprising $63$ posts ($25.7\%$ of usability issues). Developers consistently report insufficient coverage of edge cases, platform-specific behaviors, and practical usage scenarios. These documentation deficiencies directly contribute to the reliability and security issues identified in RQ2 and RQ3, as developers operate with incomplete mental models of glob behavior.
+
+\subsubsection{Feature Gaps: Critical Missing Capabilities}
+
+Feature gap complaints ($508$ posts) reveal critical deficiencies in current implementations, particularly around negation and efficient exclusion.
+
+\textbf{Missing Features} dominate feature requests with $100$ posts ($19.7\%$), indicating fundamental gaps in glob functionality. Developers frequently request capabilities like depth-limited recursion, directory exclusion during traversal, case-insensitive matching, and result streaming interfaces.
+
+\textbf{The Negation Paradox} is particularly striking: negation is among the most requested features ($150$ posts, $29.5\%$ of feature gaps). It is virtually absent in practice, appearing in only ($0.02\%$) of our $62,713$ extracted patterns. This stark contrast between demand and usage points to a critical failure in current implementations, where available negation features are likely difficult to discover, unreliable, or flawed. 
+\begin{lstlisting}[language=JavaScript, basicstyle=\ttfamily\footnotesize]
+// Works as expected:
+glob('**/*', {nodir: true, ignore: '**/*.css'}, cb)
+
+// Actual problematic behavior:
+glob('./**/*', {nodir: true, ignore: '**/*.css'}, cb)
+// All files matching the glob patterns are passed, 
+// including files fulfilling the ignored glob
+\end{lstlisting}
+For example the npm Glob library provides negation {\bf but} it is done via a configuration option on an optional \cf{config} object and counterintuitively named \cf{ignore}. Further, the implementation of the features does not skip ignored paths during enumeration but, instead, fully enumerates all paths as specified by the glob, and then post filters out based on the specified ignore glob. Thus, while present, the feature is difficult to discover and inefficient to use.
+
+
+
+%This npm glob example demonstrates a fundamental expressiveness gap where the same ignore pattern behaves differently based on path specification. When using relative paths (\texttt{./**/*}), all matching files are processed regardless of ignore patterns, forcing inefficient post-filtering and violating the principle of least processing.
+
+\textbf{Recursive Globstar Demands} account for $29$ posts ($5.7\%$), primarily from Go developers lacking native \texttt{**} support and having to use third-party libraries for basic recursive file matching creates unnecessary complexity.
+
+\textbf{Brace Expansion Niche Demand} comprises $13$ posts ($2.6\%$), showing extremely low usage ($0.29\%$, $182$ patterns) yet persistent demand from shell-experienced developers. This suggests brace expansion serves specialized workflows where its absence is blocking.
+
+\subsubsection{Usability Challenges}
+
+Usability ($245$ posts) extends beyond documentation to encompass practical implementation barriers:
+
+\textbf{Syntax Confusion} appears in $13$ posts ($5.3\%$), involving mismatches between shell experience and programmatic behavior. 
+
+\begin{lstlisting}[language=Python, basicstyle=\ttfamily\footnotesize]
+from pathlib import Path
+import glob
+# Directory structure with symlink:
+# C:\Folder
+# C:\Folder\Subfolder -> D:\Subfolder (symlink)
+# D:\Subfolder\File.txt
+
+pathlib_result = list(Path('C:/Folder').glob('**/*'))
+# Returns: [WindowsPath('C:/Folder/Subfolder')] - doesn't follow symlink
+
+glob_result = glob.glob('C:/Folder/**/*', recursive=True)  
+# Returns: ['C:/Folder/Subfolder', 'C:/Folder/Subfolder/File.txt'] 
+\end{lstlisting}
+
+This inconsistency, documented in Python/cpython issues $\#77609$, demonstrates how the same glob pattern yields fundamentally different results depending on the implementation used. The divergence creates reliability risks where scripts may miss critical files or unexpectedly include external directory contents.
+
+\textbf{Unexpected Behavior} accounts for $7$ posts ($2.9\%$), where glob operations produce results that contradict developer expectations. A striking example emerges from Python's standard library, where the recursive wildcard pattern \texttt{**} exhibits three different behaviors across modules.
+
+\begin{lstlisting}[language=Python, basicstyle=\ttfamily\footnotesize]
+# Directory structure:
+# toplevel.txt
+# dir/
+#   indir.txt
+#   subdir/
+
+import glob, pathlib
+
+# Three conflicting interpretations of '**':
+glob.glob('**')
+# ['dir', 'toplevel.txt'] - files and dirs, non-recursive, not including .
+
+glob.glob('**', recursive=True)  
+# ['dir', 'dir/subdir', 'dir/indir.txt', 'toplevel.txt'] 
+# - files and dirs, recursive, not including .
+
+list(pathlib.Path('.').glob('**'))
+# [PosixPath('.'), PosixPath('dir'), PosixPath('dir/subdir')]
+# - only directories, recursive, includes .
+\end{lstlisting}
+
+As documented in Python issue \#106747, "the Python docs for pathlib.glob are unclear on the meaning of \texttt{**}" and the behavior "gets even more confusing" across implementations. The critical inconsistency lies in hidden directory handling: while both \texttt{glob.glob} variants explicitly exclude the current directory (\texttt{.}), \texttt{pathlib.Path.glob} unexpectedly includes it. This creates subtle bugs when scripts attempt file operations on \texttt{.}, treating it as a regular file path.
+
+This fragmentation demonstrates how semantic ambiguity in core patterns creates unexpected behavior within a single language ecosystem. The inconsistent inclusion of hidden directories across Python's own globbing libraries forces developers to memorize implementation-specific quirks and add defensive filtering logic, undermining the principle of predictable pattern matching.
+
+\subsubsection{Performance Concerns}
+
+Performance issues ($81$ posts) reveal significant scaling limitations in current implementations:
+
+\textbf{Slow Matching} accounts for $19$ posts ($23.5\%$), particularly affecting recursive operations.
+
+\textbf{Recursive Overhead} comprises $6$ posts ($7.4\%$), highlighting inefficient traversal algorithms that lack pruning mechanisms or early termination capabilities.
+
+The absence of optimization features like depth limits, directory exclusion, and streaming results forces developers to implement workarounds that often worsen performance through unnecessary traversal and post-processing.
+
+\subsubsection{Compatibility Challenges}
+
+Compatibility issues (88 posts) further compound implementation gaps:
+
+\textbf{Platform Differences} dominate with $45$ posts ($49.5\%$), particularly case sensitivity and path separator handling between Unix-like systems and Windows.
+
+\textbf{Path Separator Issues} account for $17$ posts ($18.7\%$), where inconsistent handling of forward slashes versus backslashes creates cross-platform failures.
+
+\textbf{Version Incompatibility} comprises $9$ posts ($9.9\%$), describing breaking changes in glob behavior between library versions that disrupt existing functionality.
+
+\subsubsection{Synthesized Improvement Priorities}
+
+Based on our cross-RQ analysis, we identify four evidence-based improvement priorities:
+
+\begin{enumerate}
+\item \textbf{Documentation Enhancement}: Address the $63$ documented gaps with comprehensive edge case coverage, platform behavior specifications, and security guidance to prevent misconceptions identified in RQ3.
+
+\item \textbf{Feature Standardization}: Focus on the missing feature requests and negation improvements by establishing consistent semantics for recursive globbing, negation, and hidden file handling across implementations.
+
+\item \textbf{Performance Optimization}: Target the slow matching issues and recursive overhead issues through depth limits, directory exclusion, and streaming for large-scale usage.
+
+\item \textbf{Compatibility Resolution}: Address the $45$ platform difference reports through standardized of cross-platform behavior and clear migration guidance for version changes.
+\end{enumerate}
+
+These priorities address the most severe and frequent problems identified in our empirical analysis, providing a targeted roadmap for improving glob implementation ecosystems.

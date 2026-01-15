@@ -1,0 +1,26 @@
+%!TEX root = globs.tex
+
+Studies such as~\cite{regexes-are-hard,type-system-regex,regex-usage-and-context,regex-comprehension,regex-test-in-wild,regexBugs,regex-evolution} explore the challenges developers 
+face with pattern-matching tools, particularly regular expressions (regex). These studies highlight common pitfalls, such as incorrect pattern matching, performance issues, and 
+security vulnerabilities like ReDoS (Regular Expression Denial of Service)~\cite{impact-of-ReDoS, rethink-regex}. While regex has been extensively studied, globbing has received 
+less attention despite its widespread use in shell, scripting, build tools, and configuration management.
+
+Our research extends these findings by focusing specifically on globbing's usability, portability, and shortcomings across programming environments. By analyzing real-world usage 
+patterns and developer discussions, we identify gaps in globbing implementations and propose solutions to improve cross-platform compatibility and developer productivity. The 
+semantics of pattern-matching tools vary significantly across programming languages and platforms. For example~\cite{disambiguation-of-regex} proposed an analysis for checking if 
+a regex was sensitive to greedy/lazy match semantics. Globbing, as a specialized form of pattern matching, exhibits similar variability. These inconsistencies pose challenges 
+for developers writing scripts. Our work builds on these studies by documenting the differences in globbing and proposing a standardized approach to improve consistency.
+
+File system operations, including path manipulation and pattern matching, are fundamental to software development. Research such as~\cite{file-system-evolution} discusses the 
+evolution of file systems and the semantics bugs across file systems. \cite{ACID} explored extending ACID semantics to file systems, emphasizing the importance of consistency 
+and reliability in file handling. Globbing plays a critical role in file system operations, enabling developers to match and manipulate file paths. However, the lack of standardization 
+in globbing implementations leads to portability issues, particularly when scripts are moved between Unix-like systems and Windows. Our research addresses these challenges by 
+analyzing globbing behavior across platforms and proposing enhancements to improve reliability and portability. 
+
+Security vulnerabilities in pattern-matching tools, such as path traversal attacks and ReDoS~\cite{ReDoScase} in regular expressions, have been widely documented. Globbing is not 
+immune to these issues. Attacks in the wild that use improper validation of glob patterns, can lead to path traversal attacks, or globbing introduced performance 
+attacks~\cite{insecureparsing, heapoutofbound,stackexhaustion}. Our research examines these security implications and proposes best practices for secure glob patterns. 
+
+Cross-platform compatibility is a recurring challenge in software development. These challenges are exacerbated by inconsistent behavior of globbing, such as differences in 
+case sensitivity and path separator handling, \eg~\cite{caseinsensitive} and \cite{pathescape}. Our study builds on this work by empirically analyzing globbing behavior across 
+multiple platforms and programming languages, identifying common sources of incompatibility, and proposing solutions to improve portability.

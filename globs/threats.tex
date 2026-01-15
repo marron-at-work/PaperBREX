@@ -1,0 +1,12 @@
+%!TEX root = globs.tex
+
+{\bf Glob Sampling Bias:} Our methodology for procuring the glob corpus faces two threats. First, our corpus is composed of globs sampled from publicly available projects on 
+github in a fixed range of programming languages. If these sets are not sufficiently representative of the true distribution then our results may be biased. To counteract this 
+risk, we selected a range of the most popular programming languages. Second, our selection methodology involved using a set of extraction regular expressions that may miss some 
+uses of globs. To reduce this risk we randomly spot-checked and refined the extraction pipeline to ensure high coverage.
+
+{\bf Discussion Bias and Categorization:} Our methodology for gathering and analyzing developer discourse on globs also contains two possible threats to validity. First, is 
+possible sampling bias in the forums selected and the self-selection of developers that post on these sites. Our choice of the most popular forums should ensure that the results 
+are representative of programming topics that are generally relevant. As data collection was keyword-based we manually evaluated both potentials for false positives and 
+false negatives in our results. The second threat to validity of the results based on this analysis are the miss-classification of posts on topics. Our preliminary classification 
+was based on keyword matches but was then hand refined to ensure that labeling was accurate.

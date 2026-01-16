@@ -11,19 +11,27 @@ The syntax of the proposed \textbf{GlobSpec} specification is defined using a co
 common across existing globbing implementations while introducing new features to address expressiveness gaps. 
 
 \begin{lstlisting}[language=ebnf, caption={GlobSpec Grammar Specification}]
-<glob>  ::= <expr> "/" <glob> 
-          | <recursive_wildcard> "/" <glob> 
-          | <expr> 
-          | <recursive_wildcard> 
-          | <negation> <glob>
-          | ""
+GLOB  ::= COMP "/" GLOB 
+          | "**" "/" GLOB 
+          | "*" "/" GLOB 
+          | COMP 
+          | "**"
+          | "*"
 
-<expr>  ::= <literal> <expr> 
-          | <enclosed_union> <expr> 
-          | <substitution> <expr> 
-          | <wildcard> <expr> 
-          | <single_char> <expr>
-          | ""
+COMP  ::= TERM COMP 
+          | "(" OPTS ")" COMP 
+          | "!(" COMP ")" COMP
+          | TERM
+
+OPTS  ::= SEQ "|" OPTS 
+          | SEQ
+
+SEQ  ::= literal TERM
+          | "${" identifier "}" TERM
+
+TERM  ::= literal TERM
+          | "${" identifier "}" TERM
+          | (@$\epsilon$@)
 \end{lstlisting}
 
 \todo{describe the grammar more -- critical common feature support and new substitution, union, and negation constructs}

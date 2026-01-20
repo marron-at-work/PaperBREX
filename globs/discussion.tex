@@ -7,13 +7,15 @@ for execution.
 
 \subsection{Separating Pattern Semantics from Execution}
 
-The syntax of the proposed \textbf{GlobSpec} specification is defined using a context-free grammar (CFG) shown below captures the core constructs 
+The syntax of the proposed \textsc{GlobSpec} specification is defined using a context-free grammar (CFG) shown below captures the core constructs 
 common across existing globbing implementations while introducing new features to address expressiveness gaps. 
 
 \begin{lstlisting}[language=ebnf, caption={GlobSpec Grammar Specification}]
-GLOB  ::= COMP "/" GLOB 
-          | "**" "/" GLOB 
-          | "*" "/" GLOB 
+GLOB  ::= \PATH\[uhlis]*
+
+PATH  ::= COMP "/" PATH 
+          | "**" "/" PATH 
+          | "*" "/" PATH 
           | COMP 
           | "**"
           | "*"
@@ -23,56 +25,62 @@ COMP  ::= TERM COMP
           | "!(" COMP ")" COMP
           | TERM
 
-OPTS  ::= SEQ "|" OPTS 
-          | SEQ
-
-SEQ  ::= literal TERM
-          | "${" identifier "}" TERM
+OPTS  ::= TERM "|" OPTS 
+          | TERM
 
 TERM  ::= literal TERM
+          | * TERM
           | "${" identifier "}" TERM
           | (@$\epsilon$@)
 \end{lstlisting}
 
-\todo{describe the grammar more -- critical common feature support and new substitution, union, and negation constructs}
+This grammar serves as the foundation for a two-layered architecture that distinctly separates \textbf{universal pattern semantics} from \textbf{execution behaviors}. The root 
+production for a glob pattern is \texttt{GLOB}, which may be annotated with optional flags (\texttt{u}, \texttt{h}, \texttt{i}, \texttt{s}) to control execution behaviors without 
+altering the core structure of the path itself. The physical path structure is defined by the \texttt{PATH} non-terminal, which recursively composes components (\texttt{COMP})
+using the forward slash (\texttt{/}) as a \emph{standardized} path separator where the, physical, character used for matching is controlled by the \emph{separator} (\texttt{s}) flag. 
 
-\textbf{Universal Pattern Semantics (The "What"):} Defined strictly by the context free grammar, this layer specifies the \emph{invariant, mathematical meaning} of patterns independent of any environment. The grammar establishes precise, unambiguous interpretations that remain across all implementations:
+The path can be made of up to three types of components: recursive wildcards (\texttt{**}), single-level wildcards (\texttt{*}), and concrete components (\texttt{COMP}). 
+Concrete components can be simple terms made of literal characters and variable substitutions (\texttt{\$\{identifier\}}), or more complex constructs including unions 
+(\texttt{(opt1|opt2)}) and negations (\texttt{!(pattern)}\footnote{We place the side condition that the opts and negation patterns cannot be $\epsilon$.}.\\ 
+
+\noindent
+Sample patterns defined by this grammar include:
 \begin{itemize}
-\item \texttt{*.txt} means any character sequence followed by the literal sequence of characters ``\texttt{.txt}''
-\item \texttt{**/src/*.java} specifies to recursively traverse directory hierarchies to locate directories named ``\texttt{src}'', then match immediate child files ending with ``\texttt{.java}"
-\item \texttt{(cat|dog)*} defines the union of files beginning with ``\texttt{cat}'' or ``\texttt{dog}'', followed by any character sequence
-\item \texttt{!(*.log|*.tmp)} expresses the set exclusion of files matching either \texttt{*.log} or \texttt{*.tmp} patterns
+\item \textbackslash\texttt{*.txt}\textbackslash is a single component path of a character sequence followed by the literal sequence of characters ``\texttt{.txt}''
+\item \textbackslash\texttt{**/src/*.java}\textbackslash specifies a recursive prefix that ends in ``\texttt{src}'', then an immediate match of child files ending with ``\texttt{.java}"
+\item \textbackslash\texttt{(cat|dog)*}\textbackslash defines the union of files beginning with ``\texttt{cat}'' or ``\texttt{dog}'', followed by any character sequence
+\item \textbackslash\texttt{/docs/!(*.log|*.tmp)}\textbackslash expresses the set exclusion of files matching either \texttt{*.log} or \texttt{*.tmp} patterns
+\item \textbackslash\texttt{/\${user}/docs/!(*.log|*.tmp)}\textbackslash expresses the set exclusion but is parameterized by a variable \texttt{user} that can be substituted at execution time
 \end{itemize}
 
-These semantic definitions remain universal across all implementations, analogous to how SQL query semantics maintain consistent meaning across different database engines. The grammar ensures that a pattern's logical intent is preserved regardless of the underlying platform, programming language, or filesystem characteristics, establishing a foundation for predictable and portable file matching operations.
+These structural definitions are universal across all implementations. The grammar ensures that a pattern's logical intent is preserved regardless of the underlying platform, 
+programming language, or filesystem characteristics, establishing a foundation for predictable and portable file matching operations.
 
-\textbf{Execution Behaviors (The "How"):} This layer manages necessary environmental adaptations through explicit configuration flags, ensure consistent pattern semantics while accommodating platform differences. Each behavior is controlled by well-defined parameters:
+The option flags control various environmental factors, as identified in this work, that are needed to adopt the logical structure of a path to the specifics of the environment 
+and platform that it is executed on. In the \textsc{GlobSpec} architecture these flags can be set as part of the pattern itself, as global environmental settings, or as parameters to 
+globbing function calls. The following flags are proposed to address the key sources of semantic fragmentation identified in our study:
 \begin{itemize}
-\item \textbf{Case Sensitivity}: A \texttt{case\_sensitive} flag determines matching behavior, resolving fundamental inconsistency between Windows and Linux platforms.
-\item \textbf{Symlink Following}: A \texttt{follow\_symlinks} flag controls whether symbolic links are traversed during recursive matching, eliminating the behavior differences documented between Python \texttt{pathlib} and \texttt{glob} implementations.
-\item \textbf{Path Separator Normalization}: The grammar standardizes on forward slash (\texttt{/}) as the path separator, while implementations transparently convert to platform-native separators, ensuring consistent pattern interpretation across operating systems.
-\item \textbf{Unicode Normalization}: Standardized encoding ensures consistent character matching across filesystems.
+\item \textbf{(U)nicode}: Marks the glob as operating on \texttt{unicode} characters or by default the safe charset defined by the RFC3986 safe characters standard~\cite{urirfc}.
+\item \textbf{(H)idden Files}: A \texttt{include\_hidden} flag determines whether hidden files (e.g., files starting with a dot on Unix systems) are considered during matching.
+\item \textbf{(L)inks}: A \texttt{follow\_links} flag specifies whether symbolic links should be traversed during pattern matching.
+\item \textbf{(I)nsensitive Matching}: A \texttt{ignore\_case} flag allows patterns to match files regardless of case (and unicode normalization).
+\item \textbf{(S)eparator}: A \texttt{path\_separator} flag allows the user switch the character used as the path separator from forward slash \texttt{/} vs. backslash \texttt{\textbackslash{}}.
 \end{itemize}
 
-\subsection{Bridging Expressiveness Gaps}
-This architectural separation systematically addresses both the fragmentation and expressiveness limitations.
+This architectural separation systematically addresses both the fragmentation and expressiveness limitations. The grammar eliminates semantic fragmentation by fixing core pattern structure 
+and interpretation while the flags control execution details, like symlink following during recursion, and eliminates major classes of issues -- \eg this resolves cases where path separator 
+ambiguity (18.7\% of cross platform failures) is eliminated through invariant parsing rules.
 
-The grammar eliminates semantic fragmentation by fixing core pattern meanings. A recursive wildcard \texttt{**} \emph{always} means recursive directory traversal it cannot be unsupported or require special flags to activate its fundamental semantics. Flags only control execution details like symlink following during recursion. This resolves the platform specific semantic drift responsible for 49.5\% of compatibility issues, where path separator ambiguity (18.7\% of cross platform failures) is eliminated through invariant parsing rules.
+The expressiveness limitations documented in RQ4 find comprehensive solutions through \textsc{GlobSpec}'s composition mechanisms. The union, negation, and substitution rules enable 
+advanced pattern operations previously requiring manual workarounds. This formalism resolves the persistent question of features requests and workarounds seen in the developer 
+posts -- such as 29.5\% feature requests involving negation -- and enables principled glob construction for cases like \texttt{!(*.log|*.tmp)}. 
+The substitution mechanism \texttt{\$\{}pattern\_name\texttt{\}} addresses 19.7\% of feature gap requests by enabling pattern reuse and composition. This eliminates the manual 
+filtering workarounds that contribute to 23.5\% of performance issues, where developers currently process all files only to discard most during post filtering.
+Crucially, \textsc{GlobSpec}'s regular language foundation enables linear time pattern checking through finite automata compilation.
 
-The expressiveness limitations documented in RQ4 find comprehensive solutions through GlobSpec's composition mechanisms. The union and substitution rules enable advanced pattern operations previously requiring manual workarounds:
-\begin{lstlisting}[language=ebnf, caption={GlobSpec Union, and Substitution Rules}]
-<enclosed_union> ::= "(" <union> ")"
-<union> ::= <expr> "|" <union> | <expr> "|" <expr>
-<substitution> ::= "${" <var_name> "}"
-<var_name> ::= [a-zA-Z0-9_]+
-\end{lstlisting}
-This formalism resolves the \textbf{Negation Paradox} (29.5\% feature requests vs. 0.02\% usage) by enabling principled exclusion patterns like \texttt{!(*.log|*.tmp)} as logical set operations. Unlike current brittle implementation specific features, these become first class language constructs with predictable semantics.
+\textsc{GlobSpec} transforms globbing from a world of \textbf{implicit, hidden behaviors} where identical pattern strings produce different results across contexts to a 
+world of \textbf{explicit, controlled execution} where patterns maintain universal meaning through transparent, configurable interfaces.
 
-The substitution mechanism \texttt{\$\{}pattern\_name\texttt{\}} addresses 19.7\% of feature gap requests by enabling pattern reuse and composition. This eliminates the manual filtering workarounds that contribute to 23.5\% of performance issues, where developers currently process all files only to discard most during post filtering.
-
-Crucially, GlobSpec's regular language foundation enables linear time pattern checking through finite automata compilation, guaranteeing predictable performance and preventing the exponential complexity that plagues direct matching implementations.
-
-\subsection{Transforming Globbing into a Software Engineering Primitive}
-GlobSpec transforms globbing from a world of \textbf{implicit, hidden behaviors} where identical pattern strings produce different results across contexts to a world of \textbf{explicit, controlled execution} where patterns maintain universal meaning through transparent, configurable interfaces.
-
-This architectural shift enables reference implementations, pattern validation tools, cross platform testing suites, and security auditing capabilities previously impossible with implementation defined globbing. By providing this formal foundation, GlobSpec addresses the reliability, security, and portability concerns quantified throughout our empirical study while establishing globbing as a verifiable software engineering primitive.
+This architectural shift enables reference implementations, pattern validation tools, cross platform testing suites, and security auditing capabilities previously impossible 
+with implementation defined globbing. By providing this formal foundation, \textsc{GlobSpec} addresses the reliability, security, and portability concerns quantified throughout 
+our empirical study while establishing globbing as a verifiable software engineering primitive.

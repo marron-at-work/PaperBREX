@@ -1,15 +1,16 @@
 %!TEX root = globs.tex
 
-Globs are a special case of regular languages that are used extensively to manipulate path-like structured strings. They appear with custom support in \texttt{.gitignore} files, shell 
-command style expansions, and are also available, as domain-specific sub-languages (DSLs), in most general-purpose programming languages as builtin features, \eg Java in 
-\texttt{filepath}, or as popular libraries, such as \texttt{glob} in go. These glob patterns are also the source of a variety of odd bugs~\cite{gitignorestarstar} and security 
-vulnerabilities such as path traversals~\cite{pathescape}. In addition, as globs are a dialect of regular expressions, they also have many of the same pitfalls and difficulties that 
+Globs are a special case of regular languages that are used extensively to manipulate path-like structured strings. They appear with custom support in configuration formats like 
+\texttt{.gitignore}, shell command style expansions. Globs are also supported as specialized domain-specific languages (DSLs) in most general-purpose programming languages as 
+either via builtin features, \eg Java in 
+\texttt{filepath}, or as popular libraries, such as \texttt{glob} in go. These glob patterns are sources for a variety of odd bugs~\cite{gitignorestarstar} and high-impact classes of security 
+vulnerabilities including as path traversals as a top-10 "Most Dangerous Software Weaknesses"~\cite{mitre2024top25}. In addition, as globs are a dialect of regular expressions, they also have many of the same pitfalls and difficulties that 
 are known from empirical research into regular expressions~\cite{regexes-are-hard,regex-usage-and-context,regex-comprehension}. Despite this widespread use and these challenges, 
 there is limited empirical study on glob pattern syntax, semantics, and usage. 
 
 Globs support simple wildcard characters like \texttt{*} (multi-character match), \texttt{$?$} (single-character match), and character sets (\texttt{[abc]}) to allow flexible matching. 
 Enhanced globbing features, such as recursive directory traversal \texttt{(**)}, and hidden file inclusion \texttt{(.*)}, further extend their utility. Many systems also employ 
-additional meta-semantics, such as \texttt{gitignore} files, where there are special rules for leading/trailing slashes and \texttt{(**)} patterns, as well as order dependent control 
+additional meta-semantics, \eg \texttt{gitignore} files, where there are special rules for leading/trailing slashes and \texttt{(**)} patterns, as well as order dependent control 
 for \texttt{!} which excludes from a previous pattern. Globbing implementations vary significantly across languages and ecosystems. These variations result in inconsistent 
 behavior~\cite{globinconsistency}, particularly when scripts are moved between environments, or the same glob is run on platforms with (slightly) different semantics. The lack of 
 standardization poses a challenge for developers who want to create robust cross-platform file handling~\cite{regex-generalizbility,regex-evolution}. 
@@ -25,7 +26,7 @@ The contributions of this paper are as follows:
 \item We present a new polyglot glob dataset consisting of $62,713$ unique globs extracted from over $1,966$  software projects written in six popular programming languages.
 \item We empirically validate that glob use is widespread, with a core set of shared semantics \emph{but} also expose critical misalignments between language support and developer needs.
 \item We identify a set of common pitfalls, and characterize an emerging form denial-of-service attacks, Glob Denial-of-Service(\gdos), providing a framework for systematic improvement.
-\item We propose and formalize \emph{GlobSpec}, a unified grammar and standard specification that establishes mathematical foundations for glob pattern matching, as a path toward resolving the expressiveness and standardization gaps our study uncovered.
+\item We propose and formalize \emph{GlobSpec}, a unified grammar and standard specification that establishes a strong foundation for glob pattern matching, as a path toward resolving the expressiveness and standardization gaps our study uncovered.
 \end{itemize}
 
 By addressing these gaps, our work lays the groundwork for more robust and portable globbing implementations, ultimately benefiting developers and improving software quality.

@@ -10,7 +10,7 @@ We selected six environments that utilize glob patterns which represent diverse 
 of scenarios where globbing has been integrated into the ecosystem as a DSL. This selection is based primarily in the authors $15$ years of experience working with large software 
 companies, primarily Microsoft, and experience there with projects on build systems, programming language implementation, and cloud development. Secondarily, we used the TIOBE index 
 to ensure we covered a diverse set of popular programming languages~\cite{tiobe}. The selected languages and their glob implementations are as follows: Bash (shell and file-system focused), 
-JavaScript/Node.js (URI and server routes + git usage)~\cite{typesciprtevol}, Go (both standard library with third-party extensions), PHP and Ruby (legacy web sites and contrasting 
+JavaScript/Node.js (URI and server routes + git usage), Go (both standard library available via third-party extensions), PHP and Ruby (legacy web sites and contrasting 
 builtin vs library support), and Python (as a general purpose language). 
 
 \begin{itemize}
@@ -18,7 +18,7 @@ builtin vs library support), and Python (as a general purpose language).
     system style operations.
     \item \textbf{JavaScript/Node.js} was chosen for its ubiquity in modern web development, where glob patterns are frequently used for file management, build processes, and routing in 
     frameworks like \emph{Express.js}.
-    \item \textbf{PhP and Ruby} were included to represent server-side web development environments where glob patterns are often utilized in file handling and asset management tasks. These 
+    \item \textbf{PHP and Ruby} were included to represent server-side web development environments where glob patterns are often utilized in file handling and asset management tasks. These 
     languages also provide a contrast between built-in globbing capabilities (Ruby) and third-party library implementations (PHP).
     \item \textbf{Go} was selected for its growing popularity in systems programming and cloud-native applications, where efficient file pattern matching is crucial. Go's standard library includes builtin 
     globbing functionality, and is complemented by several third-party libraries that extend its capabilities.
@@ -49,7 +49,7 @@ sample of $150$ repositories to evaluate extraction accuracy. This validation sh
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\columnwidth]{language_prevalence.pdf}
-    \caption{Distribution of glob pattern occurrence across programming languages. Fig. (a) shows the percentage of repositories containing at least on glob pattern. Fig. (b) 
+    \caption{Distribution of glob pattern occurrence across programming languages. Fig. (a) shows the percentage of repositories containing at least one glob pattern. Fig. (b) 
     reports the total number of globs extracted from repositories in each language.}
     \label{fig:language_prevalence}
 \end{figure}
@@ -76,7 +76,7 @@ of both high-volume ecosystems and specialized use cases while maintaining stati
 Go $(28.38\%)$, PHP $(6.08\%)$, Ruby $(12.79\%)$, Shell $(8.09\%)$. \Cref{fig:source_comparison} shows configuration files $(91.0\%)$ 
 dominate source code use $(9.0\%)$. This bias towards configuration contexts, along with the prevalent use of glob patterns in code to describe resources such as 
 file paths or URL routes, is notable and suggests that glob patterns are primarily employed for declarative resource specification rather that for search/replacement 
-style tasks that are seen with regular expressions (the most common structured text processing DSL).
+style tasks that are seen with regular expressions.
 
 % After extraction each pattern was automatically classified, based on syntax and language semantic analysis, into a taxonomy of $13$ features organized into three categories:
 
@@ -90,7 +90,7 @@ style tasks that are seen with regular expressions (the most common structured t
 
 \subsection{Qualitative Data Collection and Analysis}
 
-Out qualitative data study utilizes 2,094 developer discussions from three complementary sources ranging from 2018-2024 to capture a broad spectrum of glob-related issues 
+Our qualitative data study utilizes 2,094 developer discussions from three complementary sources ranging in time from 2018-2024 to capture a broad spectrum of glob-related issues 
 involving usability, reliability, security, and performance concerns:
 
 \begin{itemize}
@@ -99,7 +99,7 @@ involving usability, reliability, security, and performance concerns:
 \item \textbf{CVE Database}: $444$ entries cataloging security vulnerabilities and exploits
 \end{itemize}
 
-We performed API scraping with keyword-based filtering \texttt{(core: "glob", "wildcard"; feature-specific: "recursive glob", "brace expansion"; problem-specific: "glob error", "security")}~\cite{labelprediction}
+We performed API scraping with keyword-based filtering -- (core: "glob", "wildcard"; feature-specific: "recursive glob", "brace expansion"; problem-specific: "glob error", "security")~\cite{labelprediction}
 to collect relevant posts. Quality filters \todo{what filters??} excluded low-score posts and duplicates. The resulting corpus was manually reviewed to ensure topical relevance, yielding a final dataset of $2,160$ posts 
 which are included in the reproduction artifact.
 

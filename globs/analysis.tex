@@ -47,7 +47,7 @@ hidden file (\texttt{.*}). These form a minimal portable core derived from histo
 An analysis of the $62,713$ glob patterns reveals stark usage disparities. \Cref{fig:feature_usage} demonstrates clear hierarchy of feature adoption. The wildcard operator (\texttt{*}) 
 dominates with $90.98\%$ prevalence ($57,061$ patterns), confirming its role as the fundamental glob construct. Hidden file patterns appear in $8.72\%$ of cases ($5,470$ patterns), 
 reflecting the importance of configuration file management. Character classes ($5.48\%$, $3,437$ patterns) and recursive globbing ($5.21\%$, $3,265$ patterns) show moderate adoption 
-for specific matching needs. Most strikingly, advanced features exhibit minimal usage: single-character wildcards ($0.5\%$, $322$ patterns), brace expansion ($0.29\%$, $182$ patterns), 
+for specific matching needs. Most strikingly, many other features exhibit minimal usage: single-character wildcards ($0.5\%$, $322$ patterns), brace expansion ($0.29\%$, $182$ patterns), 
 and negation ($0.02\%$, $11$ patterns). 
 
 This distribution reveals a significant gap between available language features and actual developer adoption, suggesting that current implementations either fail to meet practical 
@@ -63,15 +63,15 @@ needs or present usability barriers for advanced functionality. Beyond the core 
 \subsection*{\bf RQ2: Do differences in globbing behavior and dialect impact usability/reliability and to what extent? }
 \setcounter{subsection}{0}
 
-The analysis of developer discussions (\todo{2,094 this number is different that reported previously} in total) reveals how glob implementation inconsistencies translate into 
+The analysis of developer discussions ($2,094$ in total) reveals how glob implementation inconsistencies translate into 
 reliability and usability problems, with platform-specific semantic drift emerging as a critical concern. We enumerate the general themes identified in our taxonomy below 
 (\Cref{fig:issue_categories}) and provide more detailed analysis and case studies for the most significant issues.
 
 \begin{figure}[ht]
     \centering
     \includegraphics[width=\columnwidth]{issue_categories.pdf}
-    \caption{Distribution of \todo{2,094} glob-related issues, derived from developer discussions, across six primary categories -- security, features, reliability, usability, 
-    compatibility, performance, and other. \todo{Should sort this from highest to lowest and other as bottom category (maybe in shaded grey) dont color security.}}
+    \caption{Distribution of $2,094$ glob-related issues, derived from developer discussions, across six primary categories -- security, features, reliability, usability, 
+    compatibility, performance, and other. \todo{Should sort this from highest to lowest and other as bottom category (maybe in shaded grey) dont color security -- also make sure label does not cover the bars.}}
     \label{fig:issue_categories}
 \end{figure}
 
@@ -179,7 +179,7 @@ where?}, demonstrates that glob vulnerabilities extend beyond simple path traver
     \centering
     \includegraphics[width=\columnwidth]{security_taxonomy.pdf}
     \caption{Detailed breakdown of 528 security issues based on analyzed developer discussions, highlighting prevalent vulnerability classes and showing the contribution of glob based 
-    denial-of-service attacks, which represent a emerging threat vector globs are increasingly used in validation checks for URI resource access and API path routing.}
+    denial-of-service attacks, which represent a emerging threat vector globs are increasingly used in validation checks for URI resource access and API path routing. \todo{Review legend size to make sure fonts are legible.}}
     \label{fig:security_taxonomy}
 \end{figure}
 
@@ -190,7 +190,7 @@ File Access encompasses broader exploitation patterns including symlink attacks,
 \subsection{Glob-based Denial-of-Service (G-DoS) Vulnerabilities}
 
 We identify \textbf{\gdos} as a distinct denial-of-service vector characterized by resource exhaustion through pathological pattern matching (similar to the rise of ReDoS~\cite{impact-of-ReDoS,ReDoS-web} 
-attacks). G-DoS vulnerabilities~\cite{craft-ReDoS,ReDoS-web,static-detection-dos} can be used to both attack the glob matching engine itself~\cite{rethink-regex} but 
+attacks). DoS vulnerabilities~\cite{craft-ReDoS,ReDoS-web,static-detection-dos} can be used to both attack the glob matching engine itself~\cite{rethink-regex} but 
 can also be performed by overwhelming the underlying file system (or resource) through excessive I/O operations.
 
 Vulnerability CVE-2022-30630 existed in Go's original \texttt{Glob} function, which invoked recursive logic without depth bounds:
@@ -230,7 +230,7 @@ func globWithLimit(pattern string, depth int) (matches []string, err error) {
 
 While preventing crashes, this solution is brittle and the core issue remains. The arbitrary 10,000 separator limit creates new failures: legitimate operations on deeply 
 nested directories (e.g., \texttt{node\_modules}) are abruptly terminated. This transforms potential DoS attacks into guaranteed failures for legitimate users exceeding the 
-threshold \cite{Golangvuln}. An alternative attach, \cite{heapoutofbound} highlights heap out-of-bounds issues, attacking the engine itself, triggered through recursive globbing. 
+threshold \cite{Golangvuln}. An alternative attack~\cite{heapoutofbound} highlights heap out-of-bounds issues, attacking the engine itself, triggered through recursive globbing. 
 The Apple platform vulnerabilities~\cite{apple1,apple2,apple3} demonstrate how crafted strings can cause excessive resource consumption in \texttt{libc} glob implementations.
 
 \subsection{Information Disclosure Vulnerabilities}
@@ -285,7 +285,7 @@ Documentation gaps represent the most significant usability barrier, comprising 
 \subsection{Feature Gaps: Critical Missing Capabilities}
 
 Feature gap complaints ($508$ posts) reveal critical deficiencies in current implementations, particularly around negation and efficient exclusion. Missing Features dominate feature 
-requests with $100$ posts ($19.7\%$), indicating fundamental gaps in glob functionality. Developers frequently request capabilities like depth-limited recursion, directory 
+requests with $100$ posts ($19.7\%$), indicating fundamental gaps in glob functionality. Developers frequently request capabilities like directory 
 exclusion during traversal, case-insensitive matching, and result streaming interfaces.
 
 The Negation Paradox is particularly striking: negation is among the most requested features ($150$ posts, $29.5\%$ of feature gaps). It is virtually absent in practice, appearing 
@@ -369,7 +369,7 @@ pattern matching.
 
 Performance issues ($81$ posts) reveal significant scaling limitations in current implementations primarially focused on -- slow matching which accounts for $19$ posts ($23.5\%$), 
 particularly affecting recursive operations ($6$ posts at $7.4\%$), highlighting inefficient traversal algorithms that lack pruning mechanisms or early termination capabilities.
-The absence of optimization features like depth limits, directory exclusion, and streaming results forces developers to implement workarounds that often worsen performance through 
+The absence of optimization features like directory exclusion, and streaming results forces developers to implement workarounds that often worsen performance through 
 unnecessary traversal and post-processing.
 
 Compatibility issues (88 posts) cover the remaining implementation gaps involve platform-specific differences ($45$ posts), including path separator issues ($17$ posts), and 

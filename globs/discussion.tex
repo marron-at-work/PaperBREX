@@ -7,41 +7,43 @@ for execution.
 
 \subsection{Separating Pattern Semantics from Execution}
 
-The syntax of the proposed \textsc{GlobSpec} specification is defined using a context-free grammar (CFG) shown below captures the core constructs 
-common across existing globbing implementations while introducing new features to address expressiveness gaps. 
+The syntax of the proposed \textsc{GlobSpec} specification is defined using the context-free grammar (CFG) shown below. This grammar captures the core constructs 
+common across existing globbing implementations while introducing new features to address key expressiveness gaps. 
 
 \begin{lstlisting}[language=ebnf, caption={GlobSpec Grammar Specification}]
-GLOB  ::= \PATH\[uhlis]*
+GLOB  ::= \PREFIX PATH SUFFIX\[uhlnis]*
 
-PATH  ::= COMP "/" PATH 
+PREFIX ::= URI_SCHEME
+         | "/"
+         | (@$\epsilon$@)
+
+SUFFIX ::= "/"
+         | (@$\epsilon$@)
+
+PATH  ::= SEQ "/" PATH 
           | "**" "/" PATH 
-          | "*" "/" PATH 
-          | COMP 
+          | SEQ 
           | "**"
-          | "*"
 
-COMP  ::= TERM COMP 
-          | "(" OPTS ")" COMP 
-          | "!(" COMP ")" COMP
-          | TERM
+OPTS  ::= SEQ "|" OPTS 
+          | SEQ
 
-OPTS  ::= TERM "|" OPTS 
-          | TERM
+SEQ   ::= TERM+
 
-TERM  ::= literal TERM
-          | * TERM
-          | "${" identifier "}" TERM
-          | (@$\epsilon$@)
+TERM  ::= literal
+          | brange // e.g., [a-z]{3, 5}
+          | *
+          | "${" identifier "}"
+          | "(" OPTS ")"
 \end{lstlisting}
 
 This grammar serves as the foundation for a two-layered architecture that distinctly separates \textbf{universal pattern semantics} from \textbf{execution behaviors}. The root 
-production for a glob pattern is \texttt{GLOB}, which may be annotated with optional flags (\texttt{u}, \texttt{h}, \texttt{i}, \texttt{s}) to control execution behaviors without 
+production for a glob pattern is \texttt{GLOB}, which may be annotated with optional flags (\texttt{u}, \texttt{h}, \texttt{l}, \texttt{n}, \texttt{i}, \texttt{s}) to control execution behaviors without 
 altering the core structure of the path itself. The physical path structure is defined by the \texttt{PATH} non-terminal, which recursively composes components (\texttt{COMP})
 using the forward slash (\texttt{/}) as a \emph{standardized} path separator where the, physical, character used for matching is controlled by the \emph{separator} (\texttt{s}) flag. 
 
-The path can be made of up to three types of components: recursive wildcards (\texttt{**}), single-level wildcards (\texttt{*}), and concrete components (\texttt{COMP}). 
-Concrete components can be simple terms made of literal characters and variable substitutions (\texttt{\$\{identifier\}}), or more complex constructs including unions 
-(\texttt{(opt1|opt2)}) and negations (\texttt{!(pattern)}\footnote{We place the side condition that the opts and negation patterns cannot be $\epsilon$.}.\\ 
+The path can be made of up to three types of components: recursive wildcards (\texttt{**}), single-level wildcards (\texttt{*}), and concrete term sequences (\texttt{SEQ} and \texttt{TERM}). 
+Concrete components can be simple terms made of literal characters, bounded range matches, wildcards, variable substitutions (\texttt{\$\{identifier\}}), or union constructs \texttt{(opt1|opt2)}.\\ 
 
 \noindent
 Sample patterns defined by this grammar include:
@@ -49,8 +51,9 @@ Sample patterns defined by this grammar include:
 \item \textbackslash\texttt{*.txt}\textbackslash is a single component path of a character sequence followed by the literal sequence of characters ``\texttt{.txt}''
 \item \textbackslash\texttt{**/src/*.java}\textbackslash specifies a recursive prefix that ends in ``\texttt{src}'', then an immediate match of child files ending with ``\texttt{.java}"
 \item \textbackslash\texttt{(cat|dog)*}\textbackslash defines the union of files beginning with ``\texttt{cat}'' or ``\texttt{dog}'', followed by any character sequence
-\item \textbackslash\texttt{/docs/!(*.log|*.tmp)}\textbackslash expresses the set exclusion of files matching either \texttt{*.log} or \texttt{*.tmp} patterns
-\item \textbackslash\texttt{/\${user}/docs/!(*.log|*.tmp)}\textbackslash expresses the set exclusion but is parameterized by a variable \texttt{user} that can be substituted at execution time
+\item \textbackslash\texttt{/docs/(*.log|*.tmp)}\textbackslash expresses the files matching either \texttt{*.log} or \texttt{*.tmp} patterns
+\item \textbackslash\texttt{/\${user}/docs/ff\_[0-9]\{3,\}.tmp}\textbackslash is a parameterized path \texttt{user} that matches files starting with ``\texttt{ff\_}'' followed by at 
+least three digits and ending with ``\texttt{.tmp}''
 \end{itemize}
 
 These structural definitions are universal across all implementations. The grammar ensures that a pattern's logical intent is preserved regardless of the underlying platform, 
@@ -63,6 +66,7 @@ globbing function calls. The following flags are proposed to address the key sou
 \item \textbf{(U)nicode}: Marks the glob as operating on \texttt{unicode} characters or by default the safe charset defined by the RFC3986 safe characters standard~\cite{urirfc}.
 \item \textbf{(H)idden Files}: A \texttt{include\_hidden} flag determines whether hidden files (e.g., files starting with a dot on Unix systems) are considered during matching.
 \item \textbf{(L)inks}: A \texttt{follow\_links} flag specifies whether symbolic links should be traversed during pattern matching.
+\item \textbf{(N)egation}: A \texttt{negation} flag negates the resulting glob behavior and returns only non-matching paths.
 \item \textbf{(I)nsensitive Matching}: A \texttt{ignore\_case} flag allows patterns to match files regardless of case (and unicode normalization).
 \item \textbf{(S)eparator}: A \texttt{path\_separator} flag allows the user switch the character used as the path separator from forward slash \texttt{/} vs. backslash \texttt{\textbackslash{}}.
 \end{itemize}
@@ -71,9 +75,9 @@ This architectural separation systematically addresses both the fragmentation an
 and interpretation while the flags control execution details, like symlink following during recursion, and eliminates major classes of issues -- \eg this resolves cases where path separator 
 ambiguity (18.7\% of cross platform failures) is eliminated through invariant parsing rules.
 
-The expressiveness limitations documented in RQ4 find comprehensive solutions through \textsc{GlobSpec}'s composition mechanisms. The union, negation, and substitution rules enable 
-advanced pattern operations previously requiring manual workarounds. This formalism resolves the persistent question of features requests and workarounds seen in the developer 
-posts -- such as 29.5\% feature requests involving negation -- and enables principled glob construction for cases like \texttt{!(*.log|*.tmp)}. 
+The expressiveness limitations documented in RQ4 find comprehensive solutions through \textsc{GlobSpec}'s composition mechanisms. The union, range complement, negation, and substitution 
+rules enable advanced pattern operations previously requiring manual workarounds. This formalism resolves the persistent question of features requests and workarounds seen in the developer 
+posts -- such as 29.5\% feature requests involving negation -- and enables principled glob construction for cases like \texttt{(*.log|*.tmp)}. 
 The substitution mechanism \texttt{\$\{}pattern\_name\texttt{\}} addresses 19.7\% of feature gap requests by enabling pattern reuse and composition. This eliminates the manual 
 filtering workarounds that contribute to 23.5\% of performance issues, where developers currently process all files only to discard most during post filtering.
 Crucially, \textsc{GlobSpec}'s regular language foundation enables linear time pattern checking through finite automata compilation.

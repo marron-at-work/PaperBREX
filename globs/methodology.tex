@@ -1,7 +1,7 @@
 %!TEX root = globs.tex
 
 This study employs a mixed-methods approach to comprehensively investigate glob pattern usage across programming ecosystems. Our methodology integrates quantitative analysis of 
-$62,713$ glob patterns extracted from $1,966$ open-source repositories with qualitative analysis of $2,160$ developer discussions from Stack Overflow, GitHub issues, and CVE 
+$62,713$ glob patterns extracted from $1,355$ open-source repositories with qualitative analysis of $2,160$ developer discussions from Stack Overflow, GitHub issues, and CVE 
 databases. This multi-method approach enables us to establish both technical implementation landscapes and practical developer experiences.
 
 \subsection{Language and Environment Selection}
@@ -34,7 +34,7 @@ and hidden file behavior.
 \subsection{Repository Selection and Pattern Extraction}
 
 We constructed a representative corpus through stratified sampling of $1,966$ active GitHub repositories (Python: $377$, JavaScript: $365$, Shell: $331$, Go: $314$, PHP: $300$, Ruby: $279$) 
-meeting these criteria \todo{there were some review comments here about inconsistencies and details -- please address}:
+meeting these criteria:
 
 \begin{itemize}
 \item Primary language composition $>50\%$ to ensure idiomatic usage
@@ -90,7 +90,7 @@ style tasks that are seen with regular expressions.
 
 \subsection{Qualitative Data Collection and Analysis}
 
-Our qualitative data study utilizes 2,094 developer discussions from three complementary sources ranging in time from 2018-2024 to capture a broad spectrum of glob-related issues 
+Our qualitative data study utilizes $2,160$ developer discussions from three complementary sources ranging in time from 2018-2024 to capture a broad spectrum of glob-related issues 
 involving usability, reliability, security, and performance concerns:
 
 \begin{itemize}
@@ -100,7 +100,7 @@ involving usability, reliability, security, and performance concerns:
 \end{itemize}
 
 We performed API scraping with keyword-based filtering -- (core: "glob", "wildcard"; feature-specific: "recursive glob", "brace expansion"; problem-specific: "glob error", "security")~\cite{labelprediction}
-to collect relevant posts. Quality filters \todo{what filters??} excluded low-score posts and duplicates. The resulting corpus was manually reviewed to ensure topical relevance, yielding a final dataset of $2,160$ posts 
+to collect relevant posts. We excluded low-score discussion posts and fewer interations Github issues. The resulting corpus was manually reviewed to ensure topical relevance, yielding a final dataset of $2,160$ posts 
 which are included in the reproduction artifact.
 
 Using an iterative hybrid coding approach, combining deductive and inductive methods outlined below, we developed a taxonomy of glob-related developer issues. 

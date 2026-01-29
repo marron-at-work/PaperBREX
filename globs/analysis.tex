@@ -82,15 +82,8 @@ performance: $81$ posts ($3.8\%$).
 Language-specific analysis reveals disproportionate friction in certain ecosystems. Go appears in $523$ issue mentions ($24.2\%$ of language references) despite representing 
 only $28.38\%$ of our pattern corpus, indicating significant challenges with its standard library's limited glob support and third-party fragmentation.
 
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=\columnwidth]{reliability_usability.pdf}
-    \caption{Breakdown of $491$ reliability and usability issues from developer discussions.}
-    \label{fig:reliability_usability}
-\end{figure}
-
-\Cref{fig:reliability_usability} shows that runtime errors dominate reliability issues ($190$ posts, $48.5\%$). The high proportion of runtime errors suggests that glob implementations often encounter conditions 
-that were not expected by developers, leading to application crashes or unhandled exceptions during file system operations. This pattern indicates potential gaps in error 
+Analysis of subcategories within the reliability issues shown in \Cref{fig:issue_categories} reveals that shows that runtime errors dominate reliability issues ($190$ posts, $48.5\%$). 
+The high proportion of runtime errors suggests that glob implementations often encounter conditions that were not expected by developers, leading to application crashes or unhandled exceptions during file system operations. This pattern indicates potential gaps in error 
 handling robustness across different glob implementations.
 
 The related issue of cross-tool inconsistency ($40$ posts, $10.2\%$) demonstrates how patterns working in one tool fail in another. These cases reveal that developers expect 
@@ -102,7 +95,7 @@ Integration problems ($32$ posts, $8.2\%$) occur when glob patterns work in isol
 their runtime environment, including factors such as current working directory, user permissions, and filesystem state. The recurrence of integration problems suggests that glob 
 patterns may have implicit dependencies on execution context that are not always apparent during development or testing in isolated environments.
 
-Documentation gaps represent a significant usability barrier, comprising $64$ posts ($26.1\%$ of usability issues). Developers consistently report insufficient documentation 
+Within the usability issues shown in \Cref{fig:issue_categories}, documentation gaps represent a significant usability barrier, comprising $64$ posts ($26.1\%$ of usability issues). Developers consistently report insufficient documentation 
 covering edge cases, platform-specific behaviors, and advanced feature usage. 
 
 Syntax confusion and error messages, appearing in $18$ posts ($7.3\%$) and $7$ posts ($2.9\%$) respectively, involve mismatches between developer expectations from shell 

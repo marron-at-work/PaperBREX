@@ -82,7 +82,7 @@ performance: $81$ posts ($3.8\%$).
 Language-specific analysis reveals disproportionate friction in certain ecosystems. Go appears in $523$ issue mentions ($24.2\%$ of language references) despite representing 
 only $28.38\%$ of our pattern corpus, indicating significant challenges with its standard library's limited glob support and third-party fragmentation.
 
-Analysis of subcategories within the reliability issues shown in \Cref{fig:issue_categories} reveals that shows that runtime errors dominate reliability issues ($190$ posts, $48.5\%$). 
+Analysis of subcategories within the reliability issues shown in \Cref{fig:issue_categories} reveals that runtime errors dominate reliability issues ($190$ posts, $48.5\%$). 
 The high proportion of runtime errors suggests that glob implementations often encounter conditions that were not expected by developers, leading to application crashes or unhandled exceptions during file system operations. This pattern indicates potential gaps in error 
 handling robustness across different glob implementations.
 
@@ -117,8 +117,7 @@ The problem is particularly acute when recursive globbing interacts with hidden 
 
 Inconsistency across implementations results in the same pattern producing different results across tools. While \texttt{node-glob} and bash correctly match hidden files with recursive 
 wildcards, Node.js's built-in \texttt{fs/promises} glob implementation unexpectedly excludes them. This creates silent failures where deployment scripts work during development with 
-one library but fail (or silently produce different results) when passed to another. This creates silent failures where depolyment scripts work during development with one library but fail 
-(or silently produce different results) when passed to another. For example, a deployment script using \texttt{dist/**/*} will match files inside the hidden directory \texttt{dist/.cache} 
+one library but fail (or silently produce different results) when passed to another. For example, a deployment script using \texttt{dist/**/*} will match files inside the hidden directory \texttt{dist/.cache} 
 when using node-glob, but silently exclude them when the same pattern is used with Node.js's \texttt{fs/promises} glob. This potentially breaks the deployed application if it depends on 
 cached assets.
 
@@ -127,7 +126,7 @@ forms of data (which must be excluded). Build processes may miss critical config
 scripts may expose sensitive files like \texttt{.env} or \texttt{.credentials} containing API keys and database passwords. This vulnerability is documented in CVE-2021-42135, where glob pattern
 ambiguity in HashiCorp Vault's policy system allowed unauthorized access to credential generation endpoints.
 
-The Python ecosystem is another example with divergent behavior between \texttt{glob.glob()} (excludes hidden files by default) and \texttt{pathlib.Path.glob()} (includes them). 
+The Python ecosystem is another example with divergent hidden path behavior for \texttt{glob.glob()} (excludes hidden files by default) and \texttt{pathlib.Path.glob()} (includes them). 
 These inconsistencies cause production incidents where CI environment behavior diverges from development setups, creating unreliable deployments and potential information 
 disclosure vulnerabilities.
 
@@ -240,8 +239,8 @@ The Apple platform vulnerabilities~\cite{apple1,apple2,apple3} demonstrate how c
 \subsection{Information Disclosure Vulnerabilities}
 
 Information disclosure vulnerabilities ($4$ posts, $1.1\%$) have a disproportionately severe impact despite low frequency~\cite{dotfilesecurity}, particularly through 
-inadvertent exposure of hidden configuration files. The most common scenario involves patterns like \texttt{public/**/*} intended to match public assets but inadvertently 
-including hidden configuration files which may contain keys or other secrets. The HashiCorp Vault vulnerability (CVE-2021-42135) exemplifies how semantic ambiguity in glob 
+inadvertent exposure of secret data in configuration files. The most common scenario involves patterns like \texttt{public/**/*} intended to match public assets but inadvertently 
+including configuration files which may contain keys or other secrets. The HashiCorp Vault vulnerability (CVE-2021-42135) exemplifies how semantic ambiguity in glob 
 patterns can directly compromise security boundaries.
 
 \begin{lstlisting}[language=HCL, basicstyle=\ttfamily\footnotesize]
@@ -288,8 +287,8 @@ Documentation gaps represent the most significant usability barrier, comprising 
 
 \subsection{Feature Gaps: Critical Missing Capabilities}
 
-Feature gap complaints ($508$ posts) reveal critical deficiencies in current implementations, particularly around negation and efficient exclusion. Missing Features dominate feature 
-requests with $100$ posts ($19.7\%$), indicating fundamental gaps in glob functionality. Developers frequently request capabilities like directory 
+Feature gap complaints ($508$ posts) reveal critical deficiencies in current implementations, particularly around negation and efficient exclusion. Missing Features dominate with 
+$100$ posts ($19.7\%$), indicating fundamental gaps in glob functionality. Developers frequently request capabilities like directory 
 exclusion during traversal, case-insensitive matching, and result streaming interfaces.
 
 The Negation Paradox is particularly striking: negation is among the most requested features ($150$ posts, $29.5\%$ of feature gaps). It is virtually absent in practice, appearing 
@@ -310,7 +309,7 @@ For example the npm Glob library provides negation {\bf but} it is done via a co
 the implementation of the features does not skip ignored paths during enumeration but, instead, fully enumerates all paths as specified by the glob, and then post filters out based 
 on the specified ignore glob. Thus, while present, the feature is difficult to discover and inefficient to use.
 
-Brace Expansion, as a Niche Demand, comprises $13$ posts ($2.6\%$), showing extremely low usage ($0.29\%$, $182$ patterns) yet persistent demand from shell-experienced developers. 
+Brace Expansion, as a Niche Demand, comprises $13$ posts ($2.6\%$), showing extremely low usage ($0.29\%$, $182$ patterns) yet is frequently requested by shell-experienced developers. 
 This suggests brace expansion serves specialized workflows where its absence is blocking. Given the bias in requester expertise, this feature may also be universally useful but 
 conceptually undiscovered by less experienced users.
 
@@ -362,7 +361,7 @@ list(pathlib.Path('.').glob('**'))
 \end{lstlisting}
 
 As documented in Python issue \#106747, "the Python docs for pathlib.glob are unclear on the meaning of \texttt{**}" and the behavior "gets even more confusing" across implementations. 
-The critical inconsistency lies in hidden directory handling: while both \texttt{glob.glob} variants explicitly exclude the current directory (\texttt{.}), \texttt{pathlib.Path.glob} 
+The critical inconsistency lies in hidden directory handling: while both \texttt{glob.glob} variants explicitly exclude the current directory (\texttt{.}), the implementation in \texttt{pathlib.Path.glob} 
 unexpectedly includes it. This creates subtle bugs when scripts attempt file operations on \texttt{.}, treating it as a regular file path.
 
 This fragmentation demonstrates how semantic ambiguity in core patterns creates unexpected behavior within a single language ecosystem. The inconsistent inclusion of hidden directories 
